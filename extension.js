@@ -35,13 +35,20 @@ function activate(context) {
 			debug: lspExecutable,
 		};
 
+		const moveConfigSection = vscode.workspace.getConfiguration("move");
 		const clientOptions = {
 			outputChannel: outputChannel,
 			documentSelector: [{ scheme: 'file', language: 'move' }],
+			initializationOptions: {
+            	dialect: moveConfigSection.get("dialect")
+			}
 		};
 
 		client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
 		client.start();
+		vscode.workspace.onDidChangeConfiguration((_) => {
+        	client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
+    	});
 	} catch (e) { console.log(e) }
 
 	context.subscriptions.push(vscode.commands.registerCommand('extension.compile', async () => {
