@@ -64,7 +64,7 @@
 				"move.network": {
 					"type": "string",
 					"enum": [
-						"libra (unsupported)",
+						"libra",
 						"dfinance"
 					],
 					"default": "dfinance",
@@ -90,16 +90,6 @@
 					"type": "boolean",
 					"description": "Show notifications in modal window",
 					"default": true
-				},
-				"move.dialect": {
-					"type": "string",
-					"description": "Move Language dialect",
-					"default": "libra",
-					"enum": ["libra", "dfinance"],
-					"enumDescriptions": [
-						"Native Libra dialect",
-						"dfinance custom dialect (bech32 addresses, strings)"
-					]
 				}
 			}
 		}
