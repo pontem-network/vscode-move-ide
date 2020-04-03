@@ -40,7 +40,7 @@ function activate(context) {
 			outputChannel: outputChannel,
 			documentSelector: [{ scheme: 'file', language: 'move' }],
 			initializationOptions: {
-            	dialect: config.network
+				dialect: config.network
 			}
 		};
 
