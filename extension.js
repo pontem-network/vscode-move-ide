@@ -56,11 +56,13 @@ async function activate(context) {
 			debug: lspExecutable,
 		};
 
+		const outputChannel = vscode.window.createOutputChannel('ls-' + folder.uri.path.split('/').slice(-2).join('/'));
+
 		const config = loadConfig(document);
 		const clientOptions = {
 			outputChannel,
-			documentSelector: [{ scheme: 'file', language: 'move' }],
 			workspaceFolder: folder,
+			documentSelector: [{ scheme: 'file', language: 'move', pattern: folder.uri.fsPath + '/**/*' }],
 			initializationOptions: configToLsOptions(config)
 		};
 
