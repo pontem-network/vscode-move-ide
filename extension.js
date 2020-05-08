@@ -65,6 +65,8 @@ async function activate(context) {
 			}, configToLsOptions(config))
 		};
 
+		console.log('RUNNING SERVER FOR %s', folder.uri.path);
+
 		client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
 		client.start();
 
