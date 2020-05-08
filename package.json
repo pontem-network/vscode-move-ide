@@ -69,12 +69,12 @@
 			  "when": "resourceLangId == move"
 			}
 		],
-		"configuration":{
+		"configuration": {
 			"title": "Move IDE",
 			"properties": {
 				"move.configPath": {
 					"type": "string",
-					"default": "/.mvconfig.json",
+					"default": ".mvconfig.json",
 					"description": "When set and file is present, json configuration will be used instead of editor config"
 				},
 				"move.network": {
@@ -124,6 +124,7 @@
 		"move",
 		"dfinance",
 		"ide",
+		"move ide",
 		"move-ide",
 		"libra-ide",
 		"dfinance-ide"
@@ -146,7 +147,7 @@
 		"vscode-languageclient": "^6.1.3"
 	},
 	"move-ls": {
-		"version": "v0.3.0",
+		"version": "0.5.1",
 		"repository": "dfinance/move-language-server",
 		"binaries": {
 			"win32": "move-language-server-win32.exe",
@@ -163,4 +164,4 @@
 			"darwin": "movec-07.04.20-darwin"
 		}
 	}
-}
+

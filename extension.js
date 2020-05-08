@@ -16,79 +16,120 @@ const workspace = vscode.workspace;
 let client;
 let extensionPath;
 
+const workspaceClients = new Map();
+
 /**
  * Activate extension: register commands, attach handlers
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
 
-	extensionPath = context.extensionPath;
-
-	await startLanguageClient(context).catch((err) => console.error(err));
-
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extension.compile', (...args) => compileCommand(...args).catch(console.error))
 	);
-}
 
-/**
- * Initialize language client
- *
- * @param   {Object}  context
- * @return  {Promise}
- */
-async function startLanguageClient(context) {
-
+	extensionPath = context.extensionPath;
 	const outputChannel = vscode.window.createOutputChannel('move-language-server');
-	const executable    = (process.platform === 'win32') ? 'move-ls.exe' : 'move-ls';
-	const lspExecutable = {
-		command: path.join(context.extensionPath, 'bin', executable),
-		options: { env: { RUST_LOG: 'info' } },
-	};
 
-	const serverOptions = {
-		run:   lspExecutable,
-		debug: lspExecutable,
-	};
+	function didOpenTextDocument(document) {
 
-	// load current workspace config
-	const config  = loadConfig();
-	const network = config.network;
+		if (document.languageId !== 'move' || (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')) {
+			return;
+		}
 
-	const modules_folders = [];
+		const folder  = workspace.getWorkspaceFolder(document.uri);
 
-	if (config.stdlibPath) {
-		modules_folders.push(config.stdlibPath);
+		if (workspaceClients.has(folder)) {
+			console.log('LANGUAGE SERVER ALREADY STARTED');
+			return;
+		}
+
+		const executable    = (process.platform === 'win32') ? 'move-ls.exe' : 'move-ls';
+		const binaryPath    = path.join(extensionPath, 'bin', executable);
+		const lspExecutable = {
+			command: binaryPath,
+			options: { env: { RUST_LOG: 'info' } },
+		};
+
+		const serverOptions = {
+			run:   lspExecutable,
+			debug: lspExecutable,
+		};
+
+		const config = loadConfig(document);
+		const clientOptions = {
+			outputChannel,
+			documentSelector: [{ scheme: 'file', language: 'move' }],
+			initializationOptions: Object.assign({
+				workspaceFolder: folder
+			}, configToLsOptions(config))
+		};
+
+		client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
+		client.start();
+
+		workspaceClients.set(folder, client);
 	}
 
-	// if (config.modulesPath) {
-	// 	modules_folders.push(config.modulesPath);
-	// }
-
-	const clientOptions = {
-		outputChannel: outputChannel,
-		documentSelector: [{ scheme: 'file', language: 'move' }],
-		initializationOptions: {
-			modules_folders,
-			dialect: network,
-			sender_address:  config.defaultAccount,
-
-			// Set back when MLS is stable
-			// modules_folders: config.modulesPath && [config.modulesPath] || [],
-			// stdlib_path:     config.stdlibPath
+	workspace.onDidOpenTextDocument(didOpenTextDocument);
+	workspace.textDocuments.forEach(didOpenTextDocument);
+	workspace.onDidChangeWorkspaceFolders((event) => {
+		for (let folder  of event.removed) {
+			let client = clients.get(folder.uri.toString());
+			if (client) {
+				clients.delete(folder.uri.toString());
+				client.stop();
+			}
 		}
-	};
-
-	client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
-	client.start();
-
-	// dummy code to fix inconvenience, for reasoning see:
-	// https://github.com/microsoft/language-server-protocol/issues/676
-	vscode.workspace.onDidChangeConfiguration((_) => {
-		client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
 	});
 
-	return client.onReady();
+	// subscribe to .mvconfig.json changes
+	vscode.workspace.onDidSaveTextDocument((document) => {
+
+		if (document.languageId !== 'json' || (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')) {
+			return;
+		}
+
+		const config = workspace.getConfiguration('move', document.uri);
+		const file   = config.get('configPath');
+
+		if (!document.fileName.includes(file)) {
+			return;
+		}
+
+		try {
+			JSON.parse(document.getText()); // check if file is valid JSON
+		} catch (e) {
+			return;
+		}
+
+		const folder = workspace.getWorkspaceFolder(document.uri);
+		const client = workspaceClients.get(folder);
+
+		if (!client || client.constructor !== lsp.LanguageClient) {
+			return;
+		}
+
+		const finConfig = loadConfig(folder);
+
+		client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
+		client.onRequest('workspace/configuration', () => configToLsOptions(finConfig));
+	});
+}
+
+function configToLsOptions(config) {
+	const modules_folders = [];
+
+	if (config.modulesPath) {
+		modules_folders.push(config.modulesPath);
+	}
+
+	return {
+		modules_folders,
+		dialect: config.network,
+		stdlib_path: config.stdlibPath,
+		sender_address:  config.defaultAccount,
+	};
 }
 
 /**
@@ -169,7 +210,9 @@ function compileDfinance(account, text, {file, folder}, config) {
 
 // this method is called when your extension is deactivated
 function deactivate() {
-	client.stop();
+	return [...workspaceClients]
+		.map((client) => client.stop())
+		.reduce((chain, prom) => chain.then(prom), Promise.resolve());
 }
 
 /**
@@ -192,32 +235,48 @@ function currentPath() {
  * Try to load local config. If non existent - use VSCode settings for this
  * extension.
  *
- * @return  {Object}  Configuration object
+ * @param  {TextDocument} document File for which to load configuration
+ * @return {Object}  			   Configuration object
  */
-function loadConfig() {
+function loadConfig(document) {
 
 	// quick hack to make it extensible. church!
-	const cfg 	   = Object.assign({}, workspace.getConfiguration(CONFIG_PATH));
-	const currPath = currentPath();
-	const localCfg = path.join(currPath.folder, cfg.configPath || CONFIG_FILE);
+	const cfg 	    = Object.assign({}, workspace.getConfiguration('move', document.uri));
+	const folder    = workspace.getWorkspaceFolder(document.uri).uri.path;
+	const localPath = path.join(folder, cfg.configPath);
 
 	// check if local config exists
-	if (fs.existsSync(localCfg)) {
+	if (fs.existsSync(localPath)) {
 		try {
-			Object.assign(cfg, JSON.parse(fs.readFileSync(localCfg)))
+			Object.assign(cfg, JSON.parse(fs.readFileSync(localPath)))
 		} catch (e) {
 			console.error('Unable to read local config file - check JSON validity: ', e);
 		}
 	}
 
-	// it can be: null, undefined and string // careful
-	if (cfg.stdlibPath === undefined) {
-		cfg.stdlibPath = path.join(extensionPath, 'stdlib', cfg.network);
+	switch (true) {
+		case cfg.stdlibPath === undefined:
+			cfg.stdlibPath = path.join(extensionPath, 'stdlib', cfg.network);
+			break;
+
+		case cfg.stdlibPath === null:
+			break;
+
+		case !path.isAbsolute(cfg.stdlibPath):
+			cfg.stdlibPath = path.join(folder, cfg.stdlibPath);
 	}
 
-	// same here: null, undefined and string // careful
-	if (cfg.modulesPath === undefined) {
-		cfg.modulesPath = path.join(currPath.folder, 'modules');
+	switch (true) {
+		// same here: null, undefined and string // careful
+		case cfg.modulesPath === undefined:
+			cfg.modulesPath = path.join(folder, 'modules');
+			break;
+
+		case cfg.modulesPath === null:
+			break;
+
+		case !path.isAbsolute(cfg.modulesPath):
+			cfg.modulesPath = path.join(folder, cfg.modulesPath);
 	}
 
 	return cfg;
