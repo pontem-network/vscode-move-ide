@@ -1,21 +1,14 @@
 'use strict';
 
+const fs     = require('fs');
+const path   = require('path');
 const vscode = require('vscode');
 const cp     = require('child_process');
-const path   = require('path');
-const fs     = require('fs');
+const lsp 	 = require('vscode-languageclient');
 
-const lsp = require('vscode-languageclient');
-
-const CONFIG_PATH = 'move';
-const CONFIG_FILE = '.mvconfig.json'
-const DFI_ACC_LEN = 45; // TODO: use for future validation
-
-const workspace = vscode.workspace;
-
-let client;
 let extensionPath;
 
+const workspace = vscode.workspace;
 const workspaceClients = new Map();
 
 /**
@@ -56,8 +49,6 @@ async function activate(context) {
 			debug: lspExecutable,
 		};
 
-		const outputChannel = vscode.window.createOutputChannel('ls-' + folder.uri.path.split('/').slice(-2).join('/'));
-
 		const config = loadConfig(document);
 		const clientOptions = {
 			outputChannel,
@@ -68,7 +59,8 @@ async function activate(context) {
 
 		console.log('RUNNING SERVER FOR %s', folder.uri.path);
 
-		client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
+		const client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
+
 		client.start();
 
 		workspaceClients.set(folder, client);
@@ -181,9 +173,12 @@ function compileLibra(account, text, {file, folder}, config) {
 		,
 		'--out-dir', path.join(folder, config.compilerDir),
 		'--source-files', file,
-		'--dependencies', config.stdlibPath + '/*',
 		'--sender', account
 	];
+
+	if (config.stdlibPath) {
+		args.push('--dependencies', config.stdlibPath + '/*',);
+	}
 
 	const successMsg = 'File successfully compiled and saved in directory: ' + config.compilerDir;
 
