@@ -60,9 +60,8 @@ async function activate(context) {
 		const clientOptions = {
 			outputChannel,
 			documentSelector: [{ scheme: 'file', language: 'move' }],
-			initializationOptions: Object.assign({
-				workspaceFolder: folder
-			}, configToLsOptions(config))
+			workspaceFolder: folder,
+			initializationOptions: configToLsOptions(config)
 		};
 
 		console.log('RUNNING SERVER FOR %s', folder.uri.path);
