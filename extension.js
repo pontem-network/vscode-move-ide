@@ -105,7 +105,7 @@ async function activate(context) {
 			return;
 		}
 
-		const finConfig = loadConfig(folder);
+		const finConfig = loadConfig(document);
 
 		client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
 		client.onRequest('workspace/configuration', () => configToLsOptions(finConfig));
@@ -122,7 +122,7 @@ function configToLsOptions(config) {
 	return {
 		modules_folders,
 		dialect: config.network,
-		stdlib_path: config.stdlibPath,
+		stdlib_folder: config.stdlibPath,
 		sender_address:  config.defaultAccount,
 	};
 }
@@ -138,7 +138,8 @@ async function compileCommand() {
 		return vscode.window.showErrorMessage('Only .move and .mvir files are supported');
 	}
 
-	const config = loadConfig();
+	const active = vscode.window.activeTextEditor.document;
+	const config = loadConfig(active);
 	let account  = config.defaultAccount || null;
 
 	// check if account has been preset
@@ -306,7 +307,7 @@ function checkCreateOutDir(outDir) {
  */
 function exec(cmd) {
 
-	console.log('Executing command:', cmd, 'config:', loadConfig());
+	console.log('Executing command:', cmd);
 
 	return new Promise((resolve, reject) => {
 		return cp.exec(cmd, function onExec(error, stdout, stderr) {
