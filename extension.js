@@ -37,8 +37,10 @@ async function activate(context) {
 			return;
 		}
 
-		const executable    = (process.platform === 'win32') ? 'move-ls.exe' : 'move-ls';
-		const binaryPath    = path.join(extensionPath, 'bin', executable);
+		const executable = (process.platform === 'win32') ? 'move-ls.exe' : 'move-ls';
+		const cfgBinPath = workspace.getConfiguration('move', document.uri).get('languageServerPath');
+		let binaryPath   = cfgBinPath || path.join(extensionPath, 'bin', executable);
+
 		const lspExecutable = {
 			command: binaryPath,
 			options: { env: { RUST_LOG: 'info' } },
