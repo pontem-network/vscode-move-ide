@@ -76,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 
 		const client = new lsp.LanguageClient('move-language-server', 'Move Language Server', serverOptions, clientOptions);
 
-		client.start();
+	  client.start();
 
 		workspaceClients.set(folder, client);
 	}
@@ -229,7 +229,7 @@ function compileLibra(account: string, document: vscode.TextDocument, outdir: st
 }
 
 function compileDfinance(account: string, document: vscode.TextDocument, outdir: string, config: AppConfig) {
-	return vscode.window.showWarningMessage('Dfinance compiler temporarily turned off');
+  return vscode.window.showWarningMessage('Dfinance compiler temporarily turned off');
 }
 
 /**
@@ -242,18 +242,18 @@ function compileDfinance(account: string, document: vscode.TextDocument, outdir:
 function loadConfig(document: vscode.TextDocument): AppConfig {
 
 	// quick hack to make it extensible. church!
-	const globalCfg  = workspace.getConfiguration('move', document.uri);
-	const workDir    = workspace.getWorkspaceFolder(document.uri);
-	const folder     = (workDir && workDir.uri.fsPath) || extensionPath;
-	const localPath  = path.join(folder, globalCfg.get('configPath') || '.mvconfig.json');
+	const globalCfg = workspace.getConfiguration('move', document.uri);
+	const workDir   = workspace.getWorkspaceFolder(document.uri);
+	const folder    = (workDir && workDir.uri.fsPath) || extensionPath;
+	const localPath = path.join(folder, globalCfg.get('configPath') || '.mvconfig.json');
 
 	const cfg = {
-		sender: 	 globalCfg.get<string>('account')	  || null,
-		network: 	 globalCfg.get<string>('network')     || 'libra',
+		sender: globalCfg.get<string>('account') || null,
+		network: globalCfg.get<string>('network') || 'libra',
 		compilerDir: globalCfg.get<string>('compilerDir') || 'out',
 		modulesPath: globalCfg.get<string>('modulesPath') || 'modules',
-		stdlibPath:  globalCfg.get<string>('stdlibPath')  || undefined,
-		showModal:   globalCfg.get<boolean>('showModal')  || false
+		stdlibPath: globalCfg.get<string>('stdlibPath') || undefined,
+		showModal: globalCfg.get<boolean>('showModal') || false
 	};
 
 	// check if local config exists, then simply merge it right into cfg
