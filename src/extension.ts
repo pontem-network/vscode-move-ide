@@ -32,8 +32,8 @@ interface MlsConfig {
  */
 export async function activate(context: vscode.ExtensionContext) {
 
-	context.subscriptions.push(vscode.commands.registerCommand('move.compile', () => compileCommand().catch(console.error)));
-    context.subscriptions.push(vscode.commands.registerCommand('move.run',     () => runScriptCommand().catch(console.error)));
+    context.subscriptions.push(vscode.commands.registerCommand('move.compile', () => compileCommand().catch(console.error)));
+    context.subscriptions.push(vscode.commands.registerCommand('move.run', () => runScriptCommand().catch(console.error)));
 
 	extensionPath = context.extensionPath;
 	const outputChannel = vscode.window.createOutputChannel('move-language-server');
