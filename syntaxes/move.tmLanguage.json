@@ -232,6 +232,7 @@
             "end": "(?=[;{])",
             "patterns": [
                 { "include": "#comments" },
+                { "include": "#module_access" },
                 { "include": "#types" },
                 {
                     "comment": "Function name",
@@ -252,7 +253,9 @@
                     "end": "[)]",
                     "patterns": [
                         { "include": "#comments" },
-                        { "include": "#types" }
+                        { "include": "#module_access" },
+                        { "include": "#types" },
+                        { "include": "#mut" }
                     ]
                 },
                 {
@@ -269,6 +272,7 @@
             "end": ">",
             "patterns": [
                 { "include": "#comments" },
+                { "include": "#module_access" },
                 {
                     "comment": "Trait-like condition",
                     "match": "\\b(resource|copyable)\\b",
@@ -285,6 +289,7 @@
                 { "include": "#comments" },
 
                 { "include": "#as" },
+                { "include": "#mut" },
                 { "include": "#let" },
                 { "include": "#types" },
                 { "include": "#literals" },
@@ -295,6 +300,26 @@
                 { "include": "#fun_call" },
 
                 { "include": "#block" }
+
+            ]
+        },
+
+        "fun_call": {
+            "comment": "Function call",
+            "begin": "\\b(\\w+)\\s*(?:<[\\w,]+>)?\\s*[(]",
+            "beginCaptures": {
+                "1": { "name": "entity.name.function.call.move" }
+            },
+            "end": "[)]",
+            "patterns": [
+                { "include": "#comments" },
+                { "include": "#resource_methods" },
+                { "include": "#module_access" },
+                { "include": "#literals" },
+                { "include": "#fun_call" },
+                { "include": "#block" },
+                { "include": "#mut" },
+                { "include": "#as" }
             ]
         },
 
@@ -306,12 +331,14 @@
                 { "include": "#comments" },
 
                 { "include": "#as" },
+                { "include": "#mut" },
                 { "include": "#let" },
                 { "include": "#types" },
                 { "include": "#literals" },
                 { "include": "#control" },
                 { "include": "#resource_methods" },
                 { "include": "#module_access" },
+                { "include": "#fun_call" },
 
                 { "include": "#block" }
             ]
@@ -335,14 +362,16 @@
             "name": "keyword.operator.as.move"
         },
 
+        "mut": {
+            "comment": "&mut reference",
+            "match": "(?<=&)(mut)\\b",
+            "name": "storage.modifier.mut.move"
+        },
+
         "resource_methods": {
             "comment": "Methods to work with resource",
             "match": "\\b(borrow_global|borrow_global_mut|exists|move_from|move_to_sender)\\b",
             "name": "support.function.typed.move"
-        },
-
-        "fun_call": {
-            "comment": "Function call"
         },
 
         "self_access": {
