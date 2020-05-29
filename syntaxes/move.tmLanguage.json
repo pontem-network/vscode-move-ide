@@ -468,6 +468,60 @@
             ]
         },
 
+        "spec_block": {
+            "comment": "Spec block",
+            "begin": "{",
+            "end": "}",
+            "patterns": [
+                { "include": "#comments" },
+                { "include": "#spec_block" },
+                { "include": "#spec_types" },
+                { "include": "#fun_call" },
+                { "include": "#literals" },
+                { "include": "#control" },
+                { "include": "#types" },
+                { "include": "#let" }
+
+            ]
+        },
+
+        "spec_keywords": {
+            "match": "\\b(global|pack|unpack|pragma|native|include|ensures|requires|invariant|apply|aborts_if)\\b",
+            "name": "keyword.control.move.spec"
+        },
+
+        "spec_define": {
+            "comment": "Spec define keyword",
+            "begin": "\\b(define)\\b",
+            "beginCaptures": {
+                "1": { "name": "keyword.control.move.spec" }
+            },
+            "end": "(?=[{])",
+            "patterns": [
+                { "include": "#comments" },
+                { "include": "#spec_types" },
+                { "include": "#types" },
+                {
+                    "comment": "Function name",
+                    "begin": "(?<=define)",
+                    "end": "(?=[(])",
+                    "patterns": [
+                        { "include": "#comments" },
+                        {
+                            "name": "entity.name.function.move",
+                            "match": "\\b(\\w+)\\b"
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "spec_types": {
+            "comment": "Spec-only types",
+            "match": "\\b(range|num|vector|bool|u8|u64|u128|address)\\b",
+            "name": "support.type.vector.move"
+        },
+
         "spec": {
             "begin": "\\b(spec)\\b",
             "beginCaptures": {
@@ -491,7 +545,15 @@
                     "end": "}",
                     "patterns": [
                         { "include": "#comments" },
-                        { "include": "source.move.spec" }
+                        { "include": "#spec_block" },
+                        { "include": "#spec_types" },
+                        { "include": "#spec_define" },
+                        { "include": "#spec_keywords" },
+                        { "include": "#control" },
+                        { "include": "#fun_call" },
+                        { "include": "#literals" },
+                        { "include": "#types" },
+                        { "include": "#let" }
                     ]
                 }
             ]
