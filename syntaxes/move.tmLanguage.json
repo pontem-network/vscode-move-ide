@@ -253,6 +253,7 @@
                     "end": "[)]",
                     "patterns": [
                         { "include": "#comments" },
+                        { "include": "#self_access" },
                         { "include": "#module_access" },
                         { "include": "#types" },
                         { "include": "#mut" }
@@ -306,7 +307,7 @@
 
         "fun_call": {
             "comment": "Function call",
-            "begin": "\\b(\\w+)\\s*(?:<[\\w,]+>)?\\s*[(]",
+            "begin": "\\b(\\w+)\\s*(?:<[\\w\\s,]+>)?\\s*[(]",
             "beginCaptures": {
                 "1": { "name": "entity.name.function.call.move" }
             },
@@ -314,6 +315,7 @@
             "patterns": [
                 { "include": "#comments" },
                 { "include": "#resource_methods" },
+                { "include": "#self_access" },
                 { "include": "#module_access" },
                 { "include": "#literals" },
                 { "include": "#fun_call" },
