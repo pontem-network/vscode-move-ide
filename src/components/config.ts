@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as fs from 'fs';
 import { checkDocumentLanguage } from '../extension';
+import { workspaceClients, configToLsOptions } from './mls';
 
 export interface AppConfig {
 	modulesPath: string|null,
@@ -51,19 +52,45 @@ vscode.workspace.onDidSaveTextDocument(function onDidSaveTextDocument(document: 
     }
 
     const folder = workspace.getWorkspaceFolder(document.uri);
-    
+
+    if (!folder) {
+        return;
+    }
+
+	const client = workspaceClients.get(folder);
+
+    if (!client) {
+        return;
+    }
+
+    const finConfig = loadConfig(document);
+
+    client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
+    client.onRequest('workspace/configuration', () => configToLsOptions(finConfig));
 });
 
 // On configuration change walk over workspace folders, check if they're in clients list for MLS
 // (that means that extension is active in those folders) and trigger update for each workspace
 // client. How? That's a tricky question. I'll figure it out eventually.
 vscode.workspace.onDidChangeConfiguration(function onDidChangeConfiguration() {
+
     if (vscode.workspace.workspaceFolders === undefined) {
         return;
     }
 
     for (let folder of vscode.workspace.workspaceFolders) {
+        if (workspaceClients.has(folder)) {
+            const client = workspaceClients.get(folder);
 
+            if (!client) {
+                continue;
+            }
+
+            const finConfig = loadConfig(folder);
+
+            client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
+            client.onRequest('workspace/configuration', () => configToLsOptions(finConfig));
+        }
     }
 });
 
@@ -74,7 +101,7 @@ vscode.workspace.onDidChangeConfiguration(function onDidChangeConfiguration() {
  * @param  {TextDocument} document File for which to load configuration
  * @return {Object}  			   Configuration object
  */
-export function loadConfig(document: vscode.TextDocument): AppConfig {
+export function loadConfig(document: vscode.TextDocument|vscode.WorkspaceFolder): AppConfig {
 
 	// quick hack to make it extensible. church!
 	const globalCfg = workspace.getConfiguration('move', document.uri);

@@ -3,26 +3,23 @@ import * as cp from 'child_process';
 import * as path from 'path';
 
 import {
+    extensions,
     ExtensionContext,
     commands,
     workspace,
     TextDocument
 } from 'vscode';
 
-import * as lsp from 'vscode-languageclient';
-
-import {loadConfig} from './components/config';
 import {compileCommand} from './commands/compile';
 import {runScriptCommand} from './commands/run.script';
 
 import {
     didOpenTextDocument,
-    workspaceClients,
-    configToLsOptions
+    workspaceClients
 } from './components/mls';
 
 // @ts-ignore
-export const EXTENSION_PATH = vscode.extensions.getExtension('damirka.move-ide').extensionPath;
+export const EXTENSION_PATH = extensions.getExtension('damirka.move-ide').extensionPath;
 
 /**
  * Activate extension: register commands, attach handlers
@@ -61,40 +58,6 @@ export async function activate(context: ExtensionContext) {
 			}
 		}
     });
-
-	// subscribe to .mvconfig.json changes
-	workspace.onDidSaveTextDocument(function onDidSaveConfiguration(document: TextDocument) {
-
-		if (!checkDocumentLanguage(document, 'json')) {
-			return;
-		}
-
-		const config = workspace.getConfiguration('move', document.uri);
-		const file   = config.get<string>('configPath') || '.mvconfig.json';
-
-		if (!document.fileName.includes(file)) {
-			return;
-		}
-
-		try {
-			JSON.parse(document.getText()); // check if file is valid JSON
-		} catch (e) {
-			return;
-		}
-
-		const folder = workspace.getWorkspaceFolder(document.uri);
-		// @ts-ignore
-		const client = workspaceClients.get(folder);
-
-		if (!client || client.constructor !== lsp.LanguageClient) {
-			return;
-		}
-
-		const finConfig = loadConfig(document);
-
-		client.sendNotification('workspace/didChangeConfiguration', { settings: "" });
-		client.onRequest('workspace/configuration', () => configToLsOptions(finConfig));
-	});
 }
 
 // this method is called when your extension is deactivated

@@ -17,15 +17,18 @@ import {loadConfig} from '../components/config';
 
 export async function runScriptCommand(): Promise<any> {
 
-    // @ts-ignore
-    const document = vscode.window.activeTextEditor.document;
+    const document = window.activeTextEditor?.document;
+
+    if (!document) {
+        return;
+    }
 
     if (!checkDocumentLanguage(document, 'move')) {
         return window.showWarningMessage('Only .move scripts can be run');
     }
 
     const config = loadConfig(document);
-    let sender   = config.sender || '0x1'; // default sender in scripts is okay (I think)
+    let sender   = config.sender || '0x1'; // default sender in script
 
     const workdir    = workspace.getWorkspaceFolder(document.uri);
     const cfgBinPath = workspace.getConfiguration('move', document.uri).get<string>('moveExecutorPath');
