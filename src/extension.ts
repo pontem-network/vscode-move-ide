@@ -16,7 +16,7 @@ import {runScriptCommand} from './commands/run.script';
 import {
     didOpenTextDocument,
     workspaceClients
-} from './components/mls';
+} from './components/autocomplete';
 
 // @ts-ignore
 export const EXTENSION_PATH = extensions.getExtension('damirka.move-ide').extensionPath;

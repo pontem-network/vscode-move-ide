@@ -43,7 +43,6 @@ export function didOpenTextDocument(document: vscode.TextDocument) {
     const folder = workspace.getWorkspaceFolder(document.uri);
 
     if (folder === undefined || workspaceClients.has(folder)) {
-        console.log('LANGUAGE SERVER ALREADY STARTED');
         return;
     }
 
