@@ -7,25 +7,38 @@ export interface MoveModule {
     consts: string[],
     imports: MoveImport[],
     methods: MoveFunction[],
+    isScript: boolean
 }
 
 export interface MoveImport {
     address: string,
     module: string,
     members: string[],
-    code: string
+    code: string,
+    position: Parser.Point
 }
 
 export interface MoveFunction {
     name: string,
+    module: string,
     generics: string,
     isPublic: boolean,
     isNative: boolean,
     arguments: string,
     signature: string,
     returns: string,
-    acquires: string
+    acquires: string,
+    position: Parser.Point
 }
+
+// PROCEED HERE, IMPLEMENT MOVE TYPE, ADD TYPE HINTS
+// ALSO SCAN CONTEXT FOR TYPES AVAILABLE AND SUGGEST ACCORDINGLY
+// IT'S MOVE, BRUH. YOU CAN DO EVERYTHING IN MOVE!
+// export interface MoveType {
+//     name: string,
+//     module: string,
+//     generics:
+// }
 
 export class MoveFile {
 
@@ -37,13 +50,13 @@ export class MoveFile {
         this.uri = uri;
     }
 
-    parse(parser: Parser, text: string): MoveModule[] {
+    parse(text: string): MoveModule[] {
 
         if (!text) {
             return [];
         }
 
-        const tree = parser.parse(text);
+        const tree = this.parser.parse(text);
 
         let address: string = '';
         let modules: MoveModule[] = [];
@@ -61,15 +74,15 @@ export class MoveFile {
                     const peek = node.child(i + 1);
 
                     if (peek !== null && peek.type == 'address_literal') {
-                        console.log(peek.text)
                         address = peek.text;
                     }
                 }
 
-                console.log(''.padEnd(padding, '-'), type);
+                if (type === 'script_block') {
+                    modules.push(parseModule(child, address, true))
+                }
 
                 if (type === 'module_definition') {
-                    console.log('whaat?')
                     modules.push(parseModule(child, address));
                     continue;
                 }
@@ -83,7 +96,7 @@ export class MoveFile {
 
 }
 
-function parseModule(node: Parser.SyntaxNode, address: string | null): MoveModule {
+function parseModule(node: Parser.SyntaxNode, address: string | null, isScript = false): MoveModule {
 
     const mod: MoveModule = {
         name: '',
@@ -91,7 +104,8 @@ function parseModule(node: Parser.SyntaxNode, address: string | null): MoveModul
         imports: [],
         methods: [],
         consts: [],
-        types: []
+        types: [],
+        isScript
     };
 
     let walk = node.walk();
@@ -102,7 +116,6 @@ function parseModule(node: Parser.SyntaxNode, address: string | null): MoveModul
     if (walk.nodeType === 'module_identifier') {
         mod.name = walk.nodeText;
     }
-
 
     (function iterate(node: Parser.SyntaxNode) {
         for (let i = 0; i < node?.childCount; i++) {
@@ -118,8 +131,8 @@ function parseModule(node: Parser.SyntaxNode, address: string | null): MoveModul
                 case 'use_decl':          mod.imports.push(parseImport(child)); break;
                 case 'struct_definition': mod.types.push(child.text);   break;
 
-                case 'usual_function_definition':  mod.methods.push(parseFunction(child));       break;
-                case 'native_function_definition': mod.methods.push(parseNativeFunction(child)); break;
+                case 'usual_function_definition':  mod.methods.push(parseFunction(child, mod));       break;
+                case 'native_function_definition': mod.methods.push(parseNativeFunction(child, mod)); break;
             }
 
             iterate(child);
@@ -129,6 +142,10 @@ function parseModule(node: Parser.SyntaxNode, address: string | null): MoveModul
     return mod;
 }
 
+// function parseType(node: Parser.SyntaxNode): MoveType {
+
+// }
+
 function parseImport(node: Parser.SyntaxNode): MoveImport {
 
     let walk = node.walk();
@@ -137,7 +154,8 @@ function parseImport(node: Parser.SyntaxNode): MoveImport {
         address: '',
         module: '',
         members: [],
-        code: walk.nodeText
+        code: walk.nodeText,
+        position: node.startPosition
     };
 
     while (walk.gotoNextSibling() || walk.gotoFirstChild() || walk.gotoNextSibling()) {
@@ -151,19 +169,21 @@ function parseImport(node: Parser.SyntaxNode): MoveImport {
     return imp;
 }
 
-function parseNativeFunction(node: Parser.SyntaxNode): MoveFunction {
+function parseNativeFunction(node: Parser.SyntaxNode, module: MoveModule): MoveFunction {
 
     let walk = node.walk();
 
     let fun: MoveFunction = {
         name: '',
+        module: module.name,
         generics: '',
         isNative: true,
         isPublic: false,
         arguments: '',
         signature: walk.nodeText,
         returns: '',
-        acquires: ''
+        acquires: '',
+        position: node.startPosition
     }
 
     while (walk.gotoFirstChild()) {
@@ -184,7 +204,7 @@ function parseNativeFunction(node: Parser.SyntaxNode): MoveFunction {
     return fun;
 }
 
-function parseFunction(node: Parser.SyntaxNode): MoveFunction {
+function parseFunction(node: Parser.SyntaxNode, module: MoveModule): MoveFunction {
 
     let walk = node.walk();
 
@@ -193,13 +213,15 @@ function parseFunction(node: Parser.SyntaxNode): MoveFunction {
 
     let fun: MoveFunction = {
         name: '',
+        module: module.name,
         generics: '',
         isNative: true,
         isPublic: false,
         arguments: '',
         signature: signature,
         returns: '',
-        acquires: ''
+        acquires: '',
+        position: node.startPosition
     }
 
     while (walk.gotoFirstChild()) {

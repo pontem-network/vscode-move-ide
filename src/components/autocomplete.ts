@@ -15,6 +15,14 @@ import {
 } from '../extension';
 
 import {
+    configToLsOptions
+} from './mls'
+
+import {
+    loadConfig
+} from './config'
+
+import {
     LanguageClient,
     ServerOptions,
     LanguageClientOptions,
@@ -59,11 +67,12 @@ export function didOpenTextDocument(document: TextDocument) {
 		// Register the server for plain text documents
 		documentSelector: [{ scheme: 'file', language: 'move' }],
         synchronize: {},
-        initializationOptions: {
-            synchronization: {
-                dynamicRegistration: true
+        initializationOptions: Object.assign(
+            configToLsOptions(loadConfig(document)),
+            {
+                extensionPath: EXTENSION_PATH
             }
-        }
+        )
 	};
 
 	// Create the language client and start the client.
@@ -76,8 +85,6 @@ export function didOpenTextDocument(document: TextDocument) {
 
 	// Start the client. This will also launch the server
     client.start();
-
-    console.log('starting autocompletition server');
 
     workspaceClients.set(folder, client);
 }
