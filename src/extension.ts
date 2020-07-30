@@ -13,6 +13,8 @@ import {
 import {compileCommand} from './commands/compile';
 import {runScriptCommand} from './commands/run.script';
 
+import {downloadBinaries} from './components/downloader';
+
 import {
     didOpenTextDocument as autocompleteDidOpenTextDocument,
     workspaceClients as autocompleteWorkspaceClients
@@ -38,14 +40,10 @@ export async function activate(context: ExtensionContext) {
     // check whether /bin has .exe files; if there are - action skipped; and if
     // not - then download-binaries script is run again;
     // I hope there is a better fix for this or proper way to do it. :confused:
-    if (process.platform === 'win32') {
-        let files = fs.readdirSync(path.join(context.extensionPath, 'bin'));
-        if (files.filter((file) => file.endsWith('.exe')).length === 0) {
-            cp.fork('download-binaries.js', [], {
-                cwd: context.extensionPath,
-                env: { PLATFORM: 'win32' }
-            });
-        }
+    const files = fs.readdirSync(path.join(context.extensionPath, 'bin'));
+    if (files.length < 3) {
+        console.log('No binaries found, downloading...');
+        await downloadBinaries(context.extensionPath);
     }
 
     context.subscriptions.push(

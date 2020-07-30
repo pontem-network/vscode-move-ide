@@ -166,7 +166,9 @@
 	"devDependencies": {
 		"@types/node": "^14.0.1",
 		"@types/vscode": "^1.43.0",
-		"typescript": "^3.8.3"
+		"typescript": "^3.8.3",
+		"tree-sitter-cli": "^0.16.9",
+		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move"
 	},
 	"__metadata": {
 		"id": "7a08f3ad-eba4-44de-bca1-e41d38b68a5c",
@@ -174,8 +176,6 @@
 		"publisherId": "a21ee11b-2c64-42b1-a3d1-78e5ee8191a6"
 	},
 	"dependencies": {
-		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move",
-		"tree-sitter-cli": "^0.16.9",
 		"vscode-languageclient": "^6.1.3",
 		"vscode-languageserver": "^6.1.1",
 		"vscode-languageserver-textdocument": "^1.0.1",

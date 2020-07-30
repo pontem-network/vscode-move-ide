@@ -63,9 +63,6 @@ export function suggestCompletion(
         .map((address) => standardLibrary.get(address));
 
 
-    // !!!!!
-    // TODO: FILTER IMPORTED MODULES BY PUBLIC !!!!
-    // !!!!!
 
     // Finally let's get back to the cursor position and provide completion
     switch (cursor.location[0]) {
@@ -73,7 +70,6 @@ export function suggestCompletion(
         case Location.FunctionArguments:
 
             return getPrimitiveTypes();
-
 
         case Location.FunctionBody:
 
@@ -149,6 +145,8 @@ export function suggestCompletion(
 
             return [];
     }
+
+    return [];
 }
 
 function getStdlibImports(modules: MoveModule[]): CompletionItem[] {

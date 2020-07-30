@@ -33,14 +33,11 @@ export interface MoveFunction {
 
 // PROCEED HERE, IMPLEMENT MOVE TYPE, ADD TYPE HINTS
 // ALSO SCAN CONTEXT FOR TYPES AVAILABLE AND SUGGEST ACCORDINGLY
-// IT'S MOVE, BRUH. YOU CAN DO EVERYTHING IN MOVE!
 // export interface MoveType {
 //     name: string,
 //     module: string,
 //     generics:
 // }
-
-
 
 export class MoveFile {
 
@@ -144,6 +141,7 @@ function parseModule(node: Parser.SyntaxNode, address: string | null, isScript =
     return mod;
 }
 
+// TODO:
 // function parseType(node: Parser.SyntaxNode): MoveType {
 
 // }

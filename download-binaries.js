@@ -24,7 +24,6 @@ const PLATFORM = process.env.PLATFORM || process.platform;
         https.get(url, (res) => {
             https.get(res.headers.location, (res) => {
                 console.log('Downloading file from %s', url);
-                console.log('To...', tgt, path.resolve('bin/' + tgt));
                 res.pipe(fs.createWriteStream(path.resolve('bin/' + tgt), {mode: '755'}));
             });
         });

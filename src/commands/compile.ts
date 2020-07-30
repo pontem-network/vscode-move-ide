@@ -29,7 +29,7 @@ import {
 export async function compileCommand(): Promise<any> {
 
 	// @ts-ignore
-	const document = vscode.window.activeTextEditor.document;
+	const document = window.activeTextEditor.document;
 
 	if (!checkDocumentLanguage(document, 'move')) {
 		return window.showWarningMessage('Only .move files are supported by compiler');
