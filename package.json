@@ -1,6 +1,6 @@
 {
 	"name": "move-ide",
-	"version": "0.3.10",
+	"version": "0.4.0",
 	"description": "Move/mvir IDE for VSCode",
 	"publisher": "damirka",
 	"displayName": "Move IDE",
@@ -30,7 +30,8 @@
 				"id": "move",
 				"aliases": [
 					"Move",
-					"LibraMove"
+					"LibraMove",
+					"Libra"
 				],
 				"extensions": [
 					".move"
@@ -89,6 +90,11 @@
 		"configuration": {
 			"title": "Move IDE",
 			"properties": {
+				"move.autocomplete": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable autocompletion feature"
+				},
 				"move.configPath": {
 					"type": "string",
 					"default": ".mvconfig.json",

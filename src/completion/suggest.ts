@@ -63,9 +63,49 @@ export function suggestCompletion(
         .map((address) => standardLibrary.get(address));
 
 
+    // !!!!!
+    // TODO: FILTER IMPORTED MODULES BY PUBLIC !!!!
+    // !!!!!
+
     // Finally let's get back to the cursor position and provide completion
     switch (cursor.location[0]) {
+
+        case Location.FunctionArguments:
+
+            return getPrimitiveTypes();
+
+
         case Location.FunctionBody:
+
+            // Currently the only way to implement such case...
+            // Will do update for tree sitter grammar to parse function body correctly
+            // as well as struct pack/unpack statements. But for now let's do few dirty
+            // hacks for faster release.
+            const modAccessPos = line.indexOf('::');
+
+            if (modAccessPos > 0 && position.character > modAccessPos) {
+                const modAccess = line.slice(0, modAccessPos).trim();
+
+                // @ts-ignore
+                return getMethods(usedModules)
+                    .filter((item) => item.label.includes(modAccess))
+                    .map((item) => {
+                        item.label = item.label.replace(modAccess + '::', '');
+                        return item;
+                    });
+            }
+
+            // Same here for let statement
+            // Unfortunately tree sitter needs a lot of improvements
+            const letStatementPos = line.indexOf('let');
+
+            if (letStatementPos > 0
+                && line.includes(':')
+                && line.indexOf(':') > letStatementPos
+            ) {
+                return getPrimitiveTypes();
+            }
+
             // @ts-ignore
             return getMethods(usedModules).concat(
                 builtIns(globalScope)
@@ -149,6 +189,12 @@ function getPrimitiveTypes(): CompletionItem[] {
             label: 'address',
             kind: CompletionItemKind.TypeParameter,
             detail: 'Address type, 16-byte HEX for Libra and "wallet"-prefixed bech32 for dfinance'
+        },
+        {
+            label: 'signer',
+            insertText: '&signer',
+            kind: CompletionItemKind.TypeParameter,
+            detail: 'Representation of sender authority, can be used to move and access resources'
         }
     ];
 }
@@ -165,6 +211,7 @@ function getMethods(modules: MoveModule[]): CompletionItem[] {
     return modules
         .map((mod) => mod.methods)
         .reduce((a, c) => a.concat(c), [])
+        .filter((fun) => fun.isPublic)
         .map((fun) => {
             return {
                 label: `${fun.module}::${fun.name}${fun.generics}${fun.arguments}`,

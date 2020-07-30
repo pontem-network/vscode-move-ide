@@ -42,7 +42,6 @@ export function getScopeAt(parser: Parser, text: string, position: Parser.Point)
                 break;
 
             case 'module_definition':
-
                 let walk = cursorNode.walk();
                 walk.gotoFirstChild();
 
@@ -52,7 +51,6 @@ export function getScopeAt(parser: Parser, text: string, position: Parser.Point)
                         break;
                     }
                 }
-
                 break;
 
             case 'use_decl':

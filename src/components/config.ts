@@ -11,7 +11,8 @@ export interface AppConfig {
 	compilerDir: string,
 	network: string,
 	sender: string|undefined|null,
-	showModal: boolean
+    showModal: boolean,
+    autocomplete: boolean
 }
 
 // @ts-ignore
@@ -115,8 +116,9 @@ export function loadConfig(document: vscode.TextDocument|vscode.WorkspaceFolder)
 		compilerDir: globalCfg.get<string>('compilerDir') || 'out',
 		modulesPath: globalCfg.get<string>('modulesPath') || 'modules',
 		stdlibPath: globalCfg.get<string>('stdlibPath') || undefined,
-		showModal: globalCfg.get<boolean>('showModal') || false
-	};
+        showModal: globalCfg.get<boolean>('showModal') || false,
+        autocomplete: globalCfg.get<boolean>('autocomplete')
+    };
 
 	// check if local config exists, then simply merge it right into cfg
 	if (fs.existsSync(localPath)) {
@@ -160,6 +162,8 @@ export function loadConfig(document: vscode.TextDocument|vscode.WorkspaceFolder)
 		modulesPath: cfg.modulesPath,
 		// @ts-ignore
 		stdlibPath:  cfg.stdlibPath,
-		showModal:   cfg.showModal
+        showModal:   cfg.showModal,
+        // @ts-ignore
+        autocomplete: cfg.autocomplete
 	};
 }

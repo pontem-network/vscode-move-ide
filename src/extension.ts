@@ -14,9 +14,15 @@ import {compileCommand} from './commands/compile';
 import {runScriptCommand} from './commands/run.script';
 
 import {
-    didOpenTextDocument,
-    workspaceClients
+    didOpenTextDocument as autocompleteDidOpenTextDocument,
+    workspaceClients as autocompleteWorkspaceClients
 } from './components/autocomplete';
+
+import {
+    didOpenTextDocument as mlsDidOpenTextDocument,
+    workspaceClients as mlsWorkspaceClients
+} from './components/mls';
+
 
 // @ts-ignore
 export const EXTENSION_PATH = extensions.getExtension('damirka.move-ide').extensionPath;
@@ -47,13 +53,27 @@ export async function activate(context: ExtensionContext) {
         commands.registerCommand('move.run',   () => runScriptCommand().catch(console.error))
     );
 
-	workspace.onDidOpenTextDocument(didOpenTextDocument);
-	workspace.textDocuments.forEach(didOpenTextDocument);
+    // Add Move languageServer
+    workspace.onDidOpenTextDocument(mlsDidOpenTextDocument);
+	workspace.textDocuments.forEach(mlsDidOpenTextDocument);
 	workspace.onDidChangeWorkspaceFolders((event) => {
 		for (const folder of event.removed) {
-			const client = workspaceClients.get(folder);
+			const client = mlsWorkspaceClients.get(folder);
 			if (client) {
-				workspaceClients.delete(folder);
+				mlsWorkspaceClients.delete(folder);
+				client.stop();
+			}
+		}
+    });
+
+    // Do the same for autocompletion server
+    workspace.onDidOpenTextDocument(autocompleteDidOpenTextDocument);
+	workspace.textDocuments.forEach(autocompleteDidOpenTextDocument);
+	workspace.onDidChangeWorkspaceFolders((event) => {
+		for (const folder of event.removed) {
+			const client = autocompleteWorkspaceClients.get(folder);
+			if (client) {
+				autocompleteWorkspaceClients.delete(folder);
 				client.stop();
 			}
 		}
@@ -62,9 +82,15 @@ export async function activate(context: ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
-	return Array.from(workspaceClients.entries())
-		.map(([, client]) => client.stop())
-		.reduce((chain, prom) => chain.then(() => prom), Promise.resolve());
+    return Promise.all([
+        Array.from(mlsWorkspaceClients.entries())
+		    .map(([, client]) => client.stop())
+            .reduce((chain, prom) => chain.then(() => prom), Promise.resolve()),
+
+        Array.from(autocompleteWorkspaceClients.entries())
+		    .map(([, client]) => client.stop())
+		    .reduce((chain, prom) => chain.then(() => prom), Promise.resolve())
+    ]);
 }
 
 export function checkDocumentLanguage(document: TextDocument, languageId: string) {

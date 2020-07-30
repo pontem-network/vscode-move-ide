@@ -90,11 +90,6 @@ connection.onInitialize(async (params: InitializeParams) => {
 		};
     }
 
-    connection.console.log(JSON.stringify([
-        hasConfigurationCapability,
-        hasWorkspaceFolderCapability
-    ]));
-
     const lspOptions = params.initializationOptions;
     const wasmPath   = path.join(lspOptions.extensionPath, '/parsers/tree-sitter-move.wasm');
 
@@ -178,7 +173,7 @@ documents.onDidChangeContent(
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
-	connection.console.log('We received an file change event');
+	// connection.console.log('We received an file change event');
 });
 
 // This handler provides the initial list of the completion items.
@@ -199,78 +194,6 @@ connection.onCompletion(
             moveFile,
             standardLibrary
         );
-
-
-        // const cursor = getScopeAt(parser, text, {
-        //     row: position.line,
-        //     column: position.character
-        // });
-
-        // const currentModule = (function ({module, location}) {
-
-        //     const modules = trackedFiles.get(textDocument.uri)?.parse(text);
-
-        //     if (module === null && location.slice(-1)[0] === 'Script') {
-        //         connection.console.log('SHOULD BE HERE');
-        //         return modules?.find((mod) => (mod.isScript));
-        //     }
-
-        //     return modules?.find((mod) => mod.name === module);
-
-        // })(cursor);
-
-        // if (currentModule === undefined) {
-        //     return [];
-        // }
-
-        // const currImports = currentModule.imports.reduce((acc, val) => acc.concat(val), []);
-
-
-
-
-        // return [];
-
-
-        // connection.console.log(
-            // trackedFiles.get(textDocument.uri)?
-            // .parse(text).map((mod) => mod.isScript).toString()
-        // );
-
-        // if (!currImports) {
-        //     return [];
-        // }
-
-        // const usedAddresses   = currImports.map((mod) => `${mod.address}::${mod.module}`);
-
-        // connection.console.log('USED ADDRESSES ' + usedAddresses.length);
-
-        // const usedModules     = usedAddresses.map((addr) => standardLibrary.get(addr)).filter((mod) => mod !== undefined);
-
-        // connection.console.log('USED MODULES ' + usedModules.length);
-
-        // const importedMethods = usedModules.map((mod) => mod.methods).reduce((a, c) => a.concat(c), []);
-
-        // connection.console.log('IMPORTED METHODS ' + importedMethods.length + '     \n\n' + JSON.stringify(importedMethods.map((method) => method.module + '::' + method.name), null, 4));
-
-
-
-        // return importedMethods.map((fun) => {
-        //     return {
-        //         label: `${fun.module}::${fun.name}${fun.generics}${fun.arguments}`,
-        //         kind: CompletionItemKind.Method,
-        //         detail: fun.signature
-        //     }
-        // });
-
-        // @ts-ignore
-        // connection.console.log(
-        //     JSON.stringify(
-        //         parser.parse(text).rootNode.descendantForPosition({
-        //             row: position.line,
-        //             column: position.character
-        //         }).toString()
-        //     )
-        // );
 	}
 );
 

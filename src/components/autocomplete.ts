@@ -39,6 +39,11 @@ export function didOpenTextDocument(document: TextDocument) {
     }
 
     const folder = workspace.getWorkspaceFolder(document.uri);
+    const config = loadConfig(document);
+
+    if (config.autocomplete !== true) {
+        return;
+    }
 
     if (folder === undefined || workspaceClients.has(folder)) {
         return;
@@ -68,7 +73,7 @@ export function didOpenTextDocument(document: TextDocument) {
 		documentSelector: [{ scheme: 'file', language: 'move' }],
         synchronize: {},
         initializationOptions: Object.assign(
-            configToLsOptions(loadConfig(document)),
+            configToLsOptions(config),
             {
                 extensionPath: EXTENSION_PATH
             }
