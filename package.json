@@ -10,7 +10,6 @@
 		"Other"
 	],
 	"scripts": {
-		"postinstall": "node download-binaries",
 		"vscode:prepublish": "rm bin/*; npm run compile",
 		"tree-sitter": "tree-sitter build-wasm ./node_modules/@movei/tree-sitter-move",
 		"compile": "tsc -p ./",
