@@ -104,6 +104,8 @@ connection.onInitialize(async (params: InitializeParams) => {
 
     fs.readdirSync(stdlibPath)
         .map((file) => path.join(stdlibPath, file))
+        .filter((file) => fs.lstatSync(file).isFile()) // TODO: recursive go over folders and collect all Move files if needed.
+        .filter((file) => path.extname(file) === '.move')
         .map((file) => {
             const uri = 'file://' + file;
             const moveFile = new MoveFile(parser, uri);
