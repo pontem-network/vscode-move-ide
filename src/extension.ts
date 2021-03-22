@@ -27,7 +27,7 @@ import {
 
 
 // @ts-ignore
-export const EXTENSION_PATH = extensions.getExtension('damirka.move-ide').extensionPath;
+export const EXTENSION_PATH = extensions.getExtension('PontemNetwork.move-language').extensionPath;
 
 /**
  * Activate extension: register commands, attach handlers

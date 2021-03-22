@@ -1,9 +1,9 @@
 {
-	"name": "move-ide",
-	"version": "0.4.0",
+	"name": "move-language",
+	"version": "0.4.5",
 	"description": "Move/mvir IDE for VSCode",
-	"publisher": "damirka",
-	"displayName": "Move IDE",
+	"publisher": "PontemNetwork",
+	"displayName": "Move Language",
 	"categories": [
 		"Programming Languages",
 		"Snippets",
@@ -30,7 +30,9 @@
 				"aliases": [
 					"Move",
 					"LibraMove",
-					"Libra"
+					"Libra",
+					"Diem",
+					"DiemMove"
 				],
 				"extensions": [
 					".move"
@@ -87,7 +89,7 @@
 			]
 		},
 		"configuration": {
-			"title": "Move IDE",
+			"title": "Move Language",
 			"properties": {
 				"move.autocomplete": {
 					"type": "boolean",
@@ -144,30 +146,34 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/damirka/vscode-move-ide.git"
+		"url": "https://github.com/pontem-network/vscode-move-ide.git"
 	},
 	"keywords": [
 		"libra",
 		"move",
 		"dfinance",
+		"pontem",
+		"move language",
 		"ide",
 		"move ide",
 		"move-ide",
 		"libra-ide",
-		"dfinance-ide"
+		"dfinance-ide",
+		"diem",
+		"diem-ide"
 	],
-	"author": "Damir Shamanaev <damirka.ru@gmail.com>",
-	"license": "MIT",
+	"author": "Pontem Network <support@pontem.network>",
+	"license": "Apache License 2.0",
 	"bugs": {
-		"url": "https://github.com/damirka/vscode-move-ide/issues"
+		"url": "https://github.com/pontem-network/vscode-move-ide/issues"
 	},
-	"homepage": "https://github.com/damirka/vscode-move-ide#readme",
+	"homepage": "https://github.com/pontem-network/vscode-move-ide#readme",
 	"devDependencies": {
+		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move",
 		"@types/node": "^14.0.1",
 		"@types/vscode": "^1.43.0",
-		"typescript": "^3.8.3",
 		"tree-sitter-cli": "^0.16.9",
-		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move"
+		"typescript": "^3.8.3"
 	},
 	"__metadata": {
 		"id": "7a08f3ad-eba4-44de-bca1-e41d38b68a5c",
