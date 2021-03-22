@@ -15,7 +15,7 @@ Built by developer for developers, this extension will simplify your Move develo
 - `{{sender}}` pattern support for address in your modules and scripts
 - Built-in compiler Move (and Mvir) for Libra and Dfinance blockchains
 
-Install extension from the [marketplace]((https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language)) to start.
+Install extension from the [marketplace](https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language) to start.
 
 ## Syntax highlighting
 
