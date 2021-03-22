@@ -1,4 +1,4 @@
-# Move IDE for VSCode
+# Move Language extension for VSCode
 
 Built by developer for developers, this extension will simplify your Move development and will make your first experience with Move less painful.
 
