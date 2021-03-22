@@ -173,9 +173,8 @@
 		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move",
 		"@types/node": "^14.0.1",
 		"@types/vscode": "^1.43.0",
-		"typescript": "^3.8.3",
 		"tree-sitter-cli": "^0.16.9",
-		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move"
+		"typescript": "^3.8.3"
 	},
 	"__metadata": {
 		"id": "7a08f3ad-eba4-44de-bca1-e41d38b68a5c",
