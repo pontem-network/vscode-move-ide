@@ -62,6 +62,7 @@ export function suggestCompletion(
         .filter((address) => standardLibrary.has(address))
         .map((address) => standardLibrary.get(address));
 
+
     // Finally let's get back to the cursor position and provide completion
     switch (cursor.location[0]) {
 

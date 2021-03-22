@@ -6,7 +6,7 @@ import {AppConfig, loadConfig} from './config';
 import {checkDocumentLanguage} from '../extension';
 
 // @ts-ignore
-const EXTENSION_PATH = vscode.extensions.getExtension('damirka.move-ide').extensionPath;
+const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language').extensionPath;
 const workspace      = vscode.workspace;
 
 export const workspaceClients: Map<vscode.WorkspaceFolder, lsp.LanguageClient> = new Map();

@@ -16,7 +16,7 @@ export interface AppConfig {
 }
 
 // @ts-ignore
-const EXTENSION_PATH = vscode.extensions.getExtension('damirka.move-ide').extensionPath;
+const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language').extensionPath;
 const workspace      = vscode.workspace;
 
 export const ConfigEventEmitter = new EventEmitter();

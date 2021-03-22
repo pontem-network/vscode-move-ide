@@ -1,22 +1,19 @@
-# Move IDE for VSCode
+# Move Language extension for VSCode
 
 Built by developer for developers, this extension will simplify your Move development and will make your first experience with Move less painful.
 
 - [Jump to setup](#setup)
-- [The Move Book](https://move-book.com)
+- [Move Language Documentation](https://developers.diem.com/docs/move/overview)
 - [Move Whitepaper](https://developers.libra.org/docs/move-paper)
-- [Marketplace](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide)
 
 **What's inside**:
 
 - Move and Mvir syntax highlighting (always up to date) + spec support
 - Code Completion for imported modules and built-ins
-- [Move Language Server](https://github.com/dfinance/move-language-server) and syntax error check!
+- [Move Language Server](https://github.com/pontem-network/move-tools#language-server) and syntax error check!
 - Move Executor - you can run your code in VSCode! Type `Move: Run Script`
 - `{{sender}}` pattern support for address in your modules and scripts
 - Built-in compiler Move (and Mvir) for Libra and Dfinance blockchains
-
-Already want to try? [To the marketplace!](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide)
 
 ## Syntax highlighting
 
@@ -28,11 +25,11 @@ I've personally put much effort into making this syntax helpful (aka some keywor
 
 **Move** - brand new language now shines bright in your VSCode (the best with [Atom Light theme](https://marketplace.visualstudio.com/items?itemName=akamud.vscode-theme-onelight))
 
-![Move highlighting](https://raw.githubusercontent.com/damirka/vscode-move-ide/master/img/move.highlight.jpg)
+![Move highlighting](https://raw.githubusercontent.com/pontem-network/vscode-move-ide/master/img/move.highlight.jpg)
 
 <a name="setup"></a>
 
-## IDE Setup
+## Setup
 
 ### Recomended directory structure
 
@@ -82,6 +79,12 @@ Configuration file for dfinance:
 - stdlibPath - custom path to stdlib folder - either relative to workspace or absolute or null;
 - modulesPath - custom path to modules folder (instead of default modules) - relative or absolute or null;
 
+## Previous version
+ 
+Previously developed by [Dfinance](https://dfinance.co) team and published under another publisher as [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide).
+ 
+Currently supported by [Pontem Network](https://pontem.network) and publisher.
+
 ## Contribution
 
-Feel free to ask any questions or report bugs [by opening new issue](https://github.com/damirka/vscode-move-ide/issues).
+Feel free to ask any questions or report bugs [by opening new issue](https://github.com/pontem-network/vscode-move-ide/issues).
