@@ -105,10 +105,11 @@
 					"type": "string",
 					"enum": [
 						"libra",
-						"dfinance"
+						"dfinance",
+						"diem"
 					],
-					"default": "libra",
-					"description": "Move compiler and dialect to use: Dfinance or Libra",
+					"default": "Diem",
+					"description": "Move compiler and dialect to use: Dfinance or Diem",
 					"scope": "resource"
 				},
 				"move.compilerDir": {
@@ -167,7 +168,7 @@
 	"bugs": {
 		"url": "https://github.com/pontem-network/vscode-move-ide/issues"
 	},
-	"homepage": "https://github.com/pontem-network/vscode-move-ide#readme",
+	"homepage": "https://github.com/pontem-network/vscode-move-ide/tree/release-0.4#readme",
 	"devDependencies": {
 		"@movei/tree-sitter-move": "github:move-hub/tree-sitter-move",
 		"@types/node": "^14.0.1",
