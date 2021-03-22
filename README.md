@@ -1,6 +1,6 @@
 # Move Language extension for VSCode
 
-Initially current extension published under [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide) name, but currently we can't use this account anymore, so we publish under Pontem Network publisher.
+Initially current extension published under [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide) name, but currently we can't use this account anymore, so we publish under Pontem Network publisher, so we use new publisher and continue support in current repository.
 
 Built by developer for developers, this extension will simplify your Move development and will make your first experience with Move less painful.
 
