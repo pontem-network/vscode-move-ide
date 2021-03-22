@@ -15,6 +15,8 @@ Built by developer for developers, this extension will simplify your Move develo
 - `{{sender}}` pattern support for address in your modules and scripts
 - Built-in compiler Move (and Mvir) for Libra and Dfinance blockchains
 
+Install extension from the [marketplace]((https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language)) to start.
+
 ## Syntax highlighting
 
 Extension features best syntax highlighting you can get for Move or Mvir. Each language has its own grammar file so you won't be mistaken and syntaxes won't overlap.
@@ -83,7 +85,7 @@ Configuration file for dfinance:
  
 Previously developed by [Dfinance](https://dfinance.co) team and published under another publisher as [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide).
  
-Currently supported by [Pontem Network](https://pontem.network) and publisher.
+Currently supported by [Pontem Network](https://pontem.network).
 
 ## Contribution
 
