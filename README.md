@@ -79,6 +79,12 @@ Configuration file for dfinance:
 - stdlibPath - custom path to stdlib folder - either relative to workspace or absolute or null;
 - modulesPath - custom path to modules folder (instead of default modules) - relative or absolute or null;
 
+## Previous version
+ 
+Previously developed by [Dfinance](https://dfinance.co) team and published under another publisher as [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide).
+ 
+Currently supported by [Pontem Network](https://pontem.network) and publisher.
+
 ## Contribution
 
 Feel free to ask any questions or report bugs [by opening new issue](https://github.com/pontem-network/vscode-move-ide/issues).
