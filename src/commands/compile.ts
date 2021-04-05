@@ -1,23 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-    workspace,
-    window,
-    TextDocument,
-    ShellExecution,
-    tasks,
-    Task,
-} from 'vscode';
+import { workspace, window, TextDocument, ShellExecution, tasks, Task } from 'vscode';
 
-import {
-    checkDocumentLanguage,
-    EXTENSION_PATH
-} from '../extension';
+import { checkDocumentLanguage, EXTENSION_PATH } from '../extension';
 
-import {
-    AppConfig,
-    loadConfig
-} from '../components/config';
+import { AppConfig, loadConfig } from '../components/config';
 
 /**
  * Command: Move: Compile file
@@ -27,79 +14,90 @@ import {
  * - run compillation
  */
 export async function compileCommand(): Promise<any> {
+    // @ts-ignore
+    const document = window.activeTextEditor.document;
 
-	// @ts-ignore
-	const document = window.activeTextEditor.document;
+    if (!checkDocumentLanguage(document, 'move')) {
+        return window.showWarningMessage('Only .move files are supported by compiler');
+    }
 
-	if (!checkDocumentLanguage(document, 'move')) {
-		return window.showWarningMessage('Only .move files are supported by compiler');
-	}
+    const config = loadConfig(document);
+    let sender = config.sender || null;
 
-	const config = loadConfig(document);
-	let sender   = config.sender || null;
+    // check if account has been preset
+    if (!sender) {
+        const prompt =
+            "Enter account from which you're going to deploy this script (or set it in config)";
+        const placeHolder = config.network === 'libra' ? '0x...' : 'wallet1...';
 
-	// check if account has been preset
-	if (!sender) {
-		const prompt      = 'Enter account from which you\'re going to deploy this script (or set it in config)';
-		const placeHolder = (config.network === 'libra') ? '0x...' : 'wallet1...';
-
-		await window
-			.showInputBox({prompt, placeHolder})
+        await window
+            .showInputBox({ prompt, placeHolder })
             // @ts-ignore
-            .then((value) => (value) && (sender = value));
-	}
+            .then((value) => value && (sender = value));
+    }
 
-	const workdir = workspace.getWorkspaceFolder(document.uri) || {uri: {fsPath: ''}};
-	const outdir  = path.join(workdir.uri.fsPath, config.compilerDir);
-	const text    = document.getText(); // Whattado?
+    const workdir = workspace.getWorkspaceFolder(document.uri) || {
+        uri: { fsPath: '' },
+    };
+    const outdir = path.join(workdir.uri.fsPath, config.compilerDir);
+    const text = document.getText(); // Whattado?
 
-	checkCreateOutDir(outdir);
+    checkCreateOutDir(outdir);
 
-	if (!sender) {
-		return window.showErrorMessage('sender is not specified');
-	}
+    if (!sender) {
+        return window.showErrorMessage('sender is not specified');
+    }
 
-	switch (config.network) {
-		case 'dfinance': return compileDfinance(sender, document, outdir, config);
-		case 'libra': 	 return compileLibra(sender, document, outdir, config);
-		default: window.showErrorMessage('Unknown Move network in config: only libra and dfinance supported');
-	}
+    switch (config.network) {
+        case 'dfinance':
+            return compileDfinance(sender, document, outdir, config);
+        case 'libra':
+            return compileLibra(sender, document, outdir, config);
+        default:
+            window.showErrorMessage(
+                'Unknown Move network in config: only libra and dfinance supported'
+            );
+    }
 }
 
 function compileLibra(account: string, document: TextDocument, outdir: string, config: AppConfig) {
-
-    const bin  = path.join(EXTENSION_PATH, 'bin', 'move-build');
+    const bin = path.join(EXTENSION_PATH, 'bin', 'move-build');
     // @ts-ignore
-	const mods = [config.stdlibPath, config.modulesPath].filter((a) => !!a).filter((a) => fs.existsSync(a));
-	const args = [
-		,
-		'--out-dir', outdir,
-		'--sender', account
-	];
+    const mods = [config.stdlibPath, config.modulesPath]
+        .filter((a) => !!a)
+        .filter((a) => fs.existsSync(a));
+    const args = ['--out-dir', outdir, '--sender', account];
 
-	if (mods.length) {
-		args.push('--dependency');
-		args.push(...mods.map((mod) => mod + '/*'));
+    if (mods.length) {
+        args.push('--dependency');
+        args.push(...mods.map((mod) => mod + '/*'));
     }
 
     args.push('--', document.uri.fsPath);
 
-    const workdir  = workspace.getWorkspaceFolder(document.uri);
+    const workdir = workspace.getWorkspaceFolder(document.uri);
 
     if (!workdir) {
         return;
     }
 
-	return tasks.executeTask(new Task(
-        {type: 'move', task: 'compile'},
-        workdir,
-        'compile',
-        'move',
-        new ShellExecution(bin + args.join(' '))
-    ));
+    return tasks.executeTask(
+        new Task(
+            { type: 'move', task: 'compile' },
+            workdir,
+            'compile',
+            'move',
+            new ShellExecution(bin + args.join(' '))
+        )
+    );
 }
 
-function compileDfinance(account: string, document: TextDocument, outdir: string, config: AppConfig) {
+function compileDfinance(
+    account: string,
+    document: TextDocument,
+    outdir: string,
+    config: AppConfig
+) {
     return window.showWarningMessage('Dfinance compiler temporarily turned off');
 }
 
@@ -110,13 +108,13 @@ function compileDfinance(account: string, document: TextDocument, outdir: string
  * @throws  {Error} 		  Throw Error when ourDir path exists and is not directory
  */
 function checkCreateOutDir(outDir: string): void {
-	const outDirPath = path.resolve(outDir);
+    const outDirPath = path.resolve(outDir);
 
-	if (fs.existsSync(outDirPath)) {
-		if (!fs.statSync(outDirPath).isDirectory()) {
-			throw new Error('Can\'t create dir under move.compilerDir path - file exists');
-		}
-	} else {
-		fs.mkdirSync(outDirPath);
-	}
+    if (fs.existsSync(outDirPath)) {
+        if (!fs.statSync(outDirPath).isDirectory()) {
+            throw new Error("Can't create dir under move.compilerDir path - file exists");
+        }
+    } else {
+        fs.mkdirSync(outDirPath);
+    }
 }

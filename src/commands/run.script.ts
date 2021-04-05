@@ -1,22 +1,12 @@
 import * as path from 'path';
 
-import {
-    workspace,
-    window,
-    tasks,
-    Task,
-    ShellExecution
-} from 'vscode';
+import { workspace, window, tasks, Task, ShellExecution } from 'vscode';
 
-import {
-    EXTENSION_PATH,
-    checkDocumentLanguage
-} from '../extension';
+import { EXTENSION_PATH, checkDocumentLanguage } from '../extension';
 
-import {loadConfig} from '../components/config';
+import { loadConfig } from '../components/config';
 
 export async function runScriptCommand(): Promise<any> {
-
     const document = window.activeTextEditor?.document;
 
     if (!document) {
@@ -28,18 +18,16 @@ export async function runScriptCommand(): Promise<any> {
     }
 
     const config = loadConfig(document);
-    let sender   = config.sender || '0x1'; // default sender in script
+    let sender = config.sender || '0x1'; // default sender in script
 
-    const workdir    = workspace.getWorkspaceFolder(document.uri);
-    const cfgBinPath = workspace.getConfiguration('move', document.uri).get<string>('moveExecutorPath');
-    const executable = (process.platform === 'win32') ? 'move-executor.exe' : 'move-executor';
-	const binaryPath = cfgBinPath || path.join(EXTENSION_PATH, 'bin', executable);
+    const workdir = workspace.getWorkspaceFolder(document.uri);
+    const cfgBinPath = workspace
+        .getConfiguration('move', document.uri)
+        .get<string>('moveExecutorPath');
+    const executable = process.platform === 'win32' ? 'move-executor.exe' : 'move-executor';
+    const binaryPath = cfgBinPath || path.join(EXTENSION_PATH, 'bin', executable);
 
-    const args = [
-        , document.uri.fsPath,
-        '--sender', sender,
-        '--dialect', config.network,
-    ];
+    const args = [, document.uri.fsPath, '--sender', sender, '--dialect', config.network];
 
     const modules = [config.modulesPath, config.stdlibPath].filter((a) => !!a);
 
@@ -49,11 +37,13 @@ export async function runScriptCommand(): Promise<any> {
         return;
     }
 
-    return tasks.executeTask(new Task(
-        {type: 'move', task: 'run'},
-        workdir,
-        'run',
-        'move',
-        new ShellExecution(binaryPath + args.join(' '))
-    ));
+    return tasks.executeTask(
+        new Task(
+            { type: 'move', task: 'run' },
+            workdir,
+            'run',
+            'move',
+            new ShellExecution(binaryPath + args.join(' '))
+        )
+    );
 }
