@@ -11,11 +11,10 @@ export enum Location {
 
     FunctionDefinition = 'FunctionDefinition',
     FunctionArguments = 'FunctionArguments',
-    FunctionBody = 'FunctionBody'
+    FunctionBody = 'FunctionBody',
 }
 
 export function getScopeAt(parser: Parser, text: string, position: Parser.Point) {
-
     let cursorNode = parser.parse(text).rootNode.descendantForPosition(position);
 
     const parentShip = [];
@@ -27,7 +26,9 @@ export function getScopeAt(parser: Parser, text: string, position: Parser.Point)
                 if (cursorNode.parent.type !== 'struct_def_fields') {
                     break;
                 }
-            case 'struct_def_fields': parentShip.push(Location.StructField); break;
+            case 'struct_def_fields':
+                parentShip.push(Location.StructField);
+                break;
 
             case 'struct_definition':
                 parentShip.push(Location.StructDefinition);
@@ -65,7 +66,7 @@ export function getScopeAt(parser: Parser, text: string, position: Parser.Point)
 
             case 'func_params':
                 if (cursorNode.parent.type === 'usual_function_definition') {
-                    parentShip.push(Location.FunctionArguments)
+                    parentShip.push(Location.FunctionArguments);
                 }
 
             case 'type_parameters':
@@ -82,5 +83,4 @@ export function getScopeAt(parser: Parser, text: string, position: Parser.Point)
         module: mod,
         location: parentShip,
     };
-
 }

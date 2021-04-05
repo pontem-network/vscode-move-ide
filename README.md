@@ -2,18 +2,18 @@
 
 Built by developer for developers, this extension will simplify your Move development and will make your first experience with Move less painful.
 
-- [Jump to setup](#setup)
-- [Move Language Documentation](https://developers.diem.com/docs/move/overview)
-- [Move Whitepaper](https://developers.libra.org/docs/move-paper)
+-   [Jump to setup](#setup)
+-   [Move Language Documentation](https://developers.diem.com/docs/move/overview)
+-   [Move Whitepaper](https://developers.libra.org/docs/move-paper)
 
 **What's inside**:
 
-- Move and Mvir syntax highlighting (always up to date) + spec support
-- Code Completion for imported modules and built-ins
-- [Move Language Server](https://github.com/pontem-network/move-tools#language-server) and syntax error check!
-- Move Executor - you can run your code in VSCode! Type `Move: Run Script`
-- `{{sender}}` pattern support for address in your modules and scripts
-- Built-in compiler Move (and Mvir) for Libra and Dfinance blockchains
+-   Move and Mvir syntax highlighting (always up to date) + spec support
+-   Code Completion for imported modules and built-ins
+-   [Move Language Server](https://github.com/pontem-network/move-tools#language-server) and syntax error check!
+-   Move Executor - you can run your code in VSCode! Type `Move: Run Script`
+-   `{{sender}}` pattern support for address in your modules and scripts
+-   Built-in compiler Move (and Mvir) for Libra and Dfinance blockchains
 
 Install extension from the [marketplace](https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language) to start.
 
@@ -72,19 +72,19 @@ Configuration file for dfinance:
 
 **Comments:**
 
-- network: `libra` or `dfinance` (libra is default);
-- sender: account from which you're going to deploy/run scripts;
-- compilerDir: compiler output directory;
+-   network: `libra` or `dfinance` (libra is default);
+-   sender: account from which you're going to deploy/run scripts;
+-   compilerDir: compiler output directory;
 
 **Additional configuration options:**
 
-- stdlibPath - custom path to stdlib folder - either relative to workspace or absolute or null;
-- modulesPath - custom path to modules folder (instead of default modules) - relative or absolute or null;
+-   stdlibPath - custom path to stdlib folder - either relative to workspace or absolute or null;
+-   modulesPath - custom path to modules folder (instead of default modules) - relative or absolute or null;
 
 ## Previous version
- 
+
 Previously developed by [Dfinance](https://dfinance.co) team and published under another publisher as [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide).
- 
+
 Currently supported by [Pontem Network](https://pontem.network).
 
 ## Contribution
