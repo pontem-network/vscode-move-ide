@@ -1,10 +1,11 @@
 import * as path from 'path';
 
-import { workspace, window, tasks, Task, ShellExecution } from 'vscode';
+import { ShellExecution, Task, tasks, window, workspace } from 'vscode';
 
-import { EXTENSION_PATH, checkDocumentLanguage } from '../extension';
+import * as util from '../components/util';
 
-import { loadConfig } from '../components/config';
+import { loadProjectConfig } from '../components/config';
+import { EXTENSION_PATH } from '../extension';
 
 export async function runScriptCommand(): Promise<any> {
     const document = window.activeTextEditor?.document;
@@ -13,11 +14,11 @@ export async function runScriptCommand(): Promise<any> {
         return;
     }
 
-    if (!checkDocumentLanguage(document, 'move')) {
+    if (!util.isMoveDocument(document)) {
         return window.showWarningMessage('Only .move scripts can be run');
     }
 
-    const config = loadConfig(document);
+    const config = loadProjectConfig(document);
     let sender = config.sender || '0x1'; // default sender in script
 
     const workdir = workspace.getWorkspaceFolder(document.uri);

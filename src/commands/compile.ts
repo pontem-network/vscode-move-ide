@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { workspace, window, TextDocument, ShellExecution, tasks, Task } from 'vscode';
 
-import { checkDocumentLanguage, EXTENSION_PATH } from '../extension';
+import * as util from '../components/util';
 
-import { AppConfig, loadConfig } from '../components/config';
+import { AppConfig, loadProjectConfig } from '../components/config';
 
 /**
  * Command: Move: Compile file
@@ -17,18 +17,18 @@ export async function compileCommand(): Promise<any> {
     // @ts-ignore
     const document = window.activeTextEditor.document;
 
-    if (!checkDocumentLanguage(document, 'move')) {
+    if (!util.isMoveDocument(document)) {
         return window.showWarningMessage('Only .move files are supported by compiler');
     }
 
-    const config = loadConfig(document);
-    let sender = config.sender || null;
+    const projectConfig = loadProjectConfig(document);
+    let sender = projectConfig.sender || null;
 
     // check if account has been preset
     if (!sender) {
         const prompt =
             "Enter account from which you're going to deploy this script (or set it in config)";
-        const placeHolder = config.network === 'libra' ? '0x...' : 'wallet1...';
+        const placeHolder = projectConfig.network === 'libra' ? '0x...' : 'wallet1...';
 
         await window
             .showInputBox({ prompt, placeHolder })
@@ -39,7 +39,7 @@ export async function compileCommand(): Promise<any> {
     const workdir = workspace.getWorkspaceFolder(document.uri) || {
         uri: { fsPath: '' },
     };
-    const outdir = path.join(workdir.uri.fsPath, config.compilerDir);
+    const outdir = path.join(workdir.uri.fsPath, projectConfig.compilerDir);
     const text = document.getText(); // Whattado?
 
     checkCreateOutDir(outdir);
@@ -48,11 +48,11 @@ export async function compileCommand(): Promise<any> {
         return window.showErrorMessage('sender is not specified');
     }
 
-    switch (config.network) {
+    switch (projectConfig.network) {
         case 'dfinance':
-            return compileDfinance(sender, document, outdir, config);
-        case 'libra':
-            return compileLibra(sender, document, outdir, config);
+            return compileDfinance(sender, document, outdir, projectConfig);
+        // case 'libra':
+        //     return compileLibra(sender, document, outdir, config);
         default:
             window.showErrorMessage(
                 'Unknown Move network in config: only libra and dfinance supported'
@@ -60,37 +60,37 @@ export async function compileCommand(): Promise<any> {
     }
 }
 
-function compileLibra(account: string, document: TextDocument, outdir: string, config: AppConfig) {
-    const bin = path.join(EXTENSION_PATH, 'bin', 'move-build');
-    // @ts-ignore
-    const mods = [config.stdlibPath, config.modulesPath]
-        .filter((a) => !!a)
-        .filter((a) => fs.existsSync(a));
-    const args = ['--out-dir', outdir, '--sender', account];
-
-    if (mods.length) {
-        args.push('--dependency');
-        args.push(...mods.map((mod) => mod + '/*'));
-    }
-
-    args.push('--', document.uri.fsPath);
-
-    const workdir = workspace.getWorkspaceFolder(document.uri);
-
-    if (!workdir) {
-        return;
-    }
-
-    return tasks.executeTask(
-        new Task(
-            { type: 'move', task: 'compile' },
-            workdir,
-            'compile',
-            'move',
-            new ShellExecution(bin + args.join(' '))
-        )
-    );
-}
+// function compileLibra(account: string, document: TextDocument, outdir: string, config: AppConfig) {
+//     const bin = path.join(EXTENSION_PATH, 'bin', 'move-build');
+//     // @ts-ignore
+//     const mods = [config.stdlibPath, config.modulesPath]
+//         .filter((a) => !!a)
+//         .filter((a) => fs.existsSync(a));
+//     const args = ['--out-dir', outdir, '--sender', account];
+//
+//     if (mods.length) {
+//         args.push('--dependency');
+//         args.push(...mods.map((mod) => mod + '/*'));
+//     }
+//
+//     args.push('--', document.uri.fsPath);
+//
+//     const workdir = workspace.getWorkspaceFolder(document.uri);
+//
+//     if (!workdir) {
+//         return;
+//     }
+//
+//     return tasks.executeTask(
+//         new Task(
+//             { type: 'move', task: 'compile' },
+//             workdir,
+//             'compile',
+//             'move',
+//             new ShellExecution(bin + args.join(' '))
+//         )
+//     );
+// }
 
 function compileDfinance(
     account: string,

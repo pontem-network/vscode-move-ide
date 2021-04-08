@@ -6,18 +6,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {
-    createConnection,
-    TextDocuments,
-    ProposedFeatures,
-    InitializeParams,
-    DidChangeConfigurationNotification,
     CompletionItem,
-    CompletionItemKind,
-    TextDocumentPositionParams,
-    TextDocumentSyncKind,
+    createConnection,
+    DidChangeConfigurationNotification,
+    InitializeParams,
     InitializeResult,
-} from 'vscode-languageserver';
-
+    TextDocumentPositionParams,
+    TextDocuments,
+    TextDocumentSyncKind,
+} from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import * as Parser from 'web-tree-sitter';
@@ -27,7 +24,7 @@ import { MoveFile, MoveModule } from './parser';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-let connection = createConnection(ProposedFeatures.all);
+let connection = createConnection();
 
 // Create a simple text document manager.
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);

@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as fs from 'fs';
-import { checkDocumentLanguage } from '../extension';
 import { workspaceClients, configToLsOptions } from './mls';
 
 export interface AppConfig {
@@ -16,7 +15,8 @@ export interface AppConfig {
 }
 
 // @ts-ignore
-const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language').extensionPath;
+const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language')
+    .extensionPath;
 const workspace = vscode.workspace;
 
 export const ConfigEventEmitter = new EventEmitter();
@@ -27,7 +27,7 @@ export function subscribe(callback: Function) {
     // listeners then can update their configurations
 
     ConfigEventEmitter.on(CONFIG_CHANGE, function (document: vscode.TextDocument) {
-        const config = loadConfig(document);
+        const config = loadProjectConfig(document);
 
         callback(config);
     });
@@ -64,7 +64,7 @@ vscode.workspace.onDidSaveTextDocument(function onDidSaveTextDocument(
         return;
     }
 
-    const finConfig = loadConfig(document);
+    const finConfig = loadProjectConfig(document);
 
     client.sendNotification('workspace/didChangeConfiguration', {
         settings: '',
@@ -88,7 +88,7 @@ vscode.workspace.onDidChangeConfiguration(function onDidChangeConfiguration() {
                 continue;
             }
 
-            const finConfig = loadConfig(folder);
+            const finConfig = loadProjectConfig(folder);
 
             client.sendNotification('workspace/didChangeConfiguration', {
                 settings: '',
@@ -105,7 +105,9 @@ vscode.workspace.onDidChangeConfiguration(function onDidChangeConfiguration() {
  * @param  {TextDocument} document File for which to load configuration
  * @return {Object}  			   Configuration object
  */
-export function loadConfig(document: vscode.TextDocument | vscode.WorkspaceFolder): AppConfig {
+export function loadProjectConfig(
+    document: vscode.TextDocument | vscode.WorkspaceFolder
+): AppConfig {
     // quick hack to make it extensible. church!
     const globalCfg = workspace.getConfiguration('move', document.uri);
     const workDir = workspace.getWorkspaceFolder(document.uri);

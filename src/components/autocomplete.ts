@@ -2,27 +2,28 @@ import * as path from 'path';
 import { WorkspaceFolder, TextDocument, workspace, window } from 'vscode';
 
 import * as vscode from 'vscode';
-import { EXTENSION_PATH, checkDocumentLanguage } from '../extension';
+import { EXTENSION_PATH } from '../extension';
 import { configToLsOptions } from './mls';
-import { loadConfig } from './config';
+import { loadProjectConfig } from './config';
 
 import {
     LanguageClient,
     ServerOptions,
     LanguageClientOptions,
     TransportKind,
-} from 'vscode-languageclient';
+} from 'vscode-languageclient/node';
+import * as util from './util';
 
 export const workspaceClients: Map<WorkspaceFolder, LanguageClient> = new Map();
 export const outputChannel = window.createOutputChannel('move-autocompletion-server');
 
 export function didOpenTextDocument(document: TextDocument) {
-    if (!checkDocumentLanguage(document, 'move')) {
+    if (!util.isMoveDocument(document)) {
         return;
     }
 
     const folder = workspace.getWorkspaceFolder(document.uri);
-    const config = loadConfig(document);
+    const config = loadProjectConfig(document);
 
     if (config.autocomplete !== true) {
         return;

@@ -1,12 +1,12 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
-import * as lsp from 'vscode-languageclient';
+import * as lsp from 'vscode-languageclient/node';
 
-import { AppConfig, loadConfig } from './config';
-import { checkDocumentLanguage } from '../extension';
+import { AppConfig, loadProjectConfig } from './config';
+import * as util from './util';
 
 // @ts-ignore
-const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language').extensionPath;
+const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language')
+    .extensionPath;
 const workspace = vscode.workspace;
 
 export const workspaceClients: Map<vscode.WorkspaceFolder, lsp.LanguageClient> = new Map();
@@ -20,7 +20,7 @@ export interface MlsConfig {
 }
 
 export function configToLsOptions(cfg: AppConfig): MlsConfig {
-    const modules_folders = [];
+    const modules_folders: string[] = [];
 
     if (cfg.modulesPath) {
         modules_folders.push(cfg.modulesPath);
@@ -34,8 +34,11 @@ export function configToLsOptions(cfg: AppConfig): MlsConfig {
     };
 }
 
-export function didOpenTextDocument(document: vscode.TextDocument) {
-    if (!checkDocumentLanguage(document, 'move')) {
+export function didOpenTextDocument(
+    languageServerPath: string,
+    document: vscode.TextDocument
+) {
+    if (!util.isMoveDocument(document)) {
         return;
     }
 
@@ -45,14 +48,14 @@ export function didOpenTextDocument(document: vscode.TextDocument) {
         return;
     }
 
-    const executable = process.platform === 'win32' ? 'move-ls.exe' : 'move-ls';
-    const cfgBinPath = workspace
-        .getConfiguration('move', document.uri)
-        .get<string>('languageServerPath');
-    let binaryPath = cfgBinPath || path.join(EXTENSION_PATH, 'bin', executable);
+    // const executable = process.platform === 'win32' ? 'move-ls.exe' : 'move-ls';
+    // const cfgBinPath = workspace
+    //     .getConfiguration('move', document.uri)
+    //     .get<string>('languageServerPath');
+    // let binaryPath = cfgBinPath || path.join(EXTENSION_PATH, 'bin', executable);
 
     const lspExecutable: lsp.Executable = {
-        command: binaryPath,
+        command: languageServerPath,
         options: { env: { RUST_LOG: 'info' } },
     };
 
@@ -61,7 +64,7 @@ export function didOpenTextDocument(document: vscode.TextDocument) {
         debug: lspExecutable,
     };
 
-    const config = loadConfig(document);
+    const config = loadProjectConfig(document);
     const clientOptions: lsp.LanguageClientOptions = {
         outputChannel,
         workspaceFolder: folder,
