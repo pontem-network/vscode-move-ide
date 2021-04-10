@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 import { Metadata } from './metadata';
 
 export class Dove {
-    constructor(private executable: string, private traceExtension: boolean) {}
+    constructor(readonly executable: string, private readonly traceExtension: boolean) {}
 
     async build(folder: vscode.WorkspaceFolder) {
         await this.runCommand('build', [], folder.uri.fsPath);

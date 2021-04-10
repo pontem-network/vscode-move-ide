@@ -43,10 +43,41 @@
     },
     "activationEvents": [
         "onLanguage:mvir",
-        "onLanguage:move"
+        "onLanguage:move",
+        "workspaceContains:**/Dove.toml"
     ],
     "main": "./dist/extension.js",
     "contributes": {
+        "taskDefinitions": [
+            {
+                "type": "dove",
+                "required": [
+                    "command"
+                ],
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "args": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        ],
+        "commands": [
+            {
+                "command": "move.reload",
+                "when": "resourceLangId == move",
+                "title": "Restart move-language-server",
+                "category": "Move"
+            }
+        ],
         "languages": [
             {
                 "id": "move",
@@ -85,18 +116,6 @@
                 "language": "mvir",
                 "scopeName": "source.mvir",
                 "path": "./syntaxes/mvir.tmLanguage.json"
-            }
-        ],
-        "commands": [
-            {
-                "command": "move.build",
-                "when": "resourceLangId == move",
-                "title": "Move: Build"
-            },
-            {
-                "command": "move.test",
-                "when": "resourceLangId == move",
-                "title": "Move: Run Tests"
             }
         ],
         "menus": {

@@ -1,16 +1,9 @@
 import * as vscode from 'vscode';
 import * as lsp from 'vscode-languageclient/node';
 
-import { AppConfig, loadProjectConfig } from './config';
-import * as util from './util';
-
-// @ts-ignore
-const EXTENSION_PATH = vscode.extensions.getExtension('PontemNetwork.move-language')
-    .extensionPath;
-const workspace = vscode.workspace;
+import { AppConfig } from './config';
 
 export const workspaceClients: Map<vscode.WorkspaceFolder, lsp.LanguageClient> = new Map();
-export const outputChannel = vscode.window.createOutputChannel('move-language-server');
 
 export interface MlsConfig {
     dialect: string;
@@ -32,60 +25,4 @@ export function configToLsOptions(cfg: AppConfig): MlsConfig {
         stdlib_folder: cfg.stdlibPath,
         sender_address: cfg.sender,
     };
-}
-
-export function didOpenTextDocument(
-    languageServerPath: string,
-    document: vscode.TextDocument
-) {
-    if (!util.isMoveDocument(document)) {
-        return;
-    }
-
-    const folder = workspace.getWorkspaceFolder(document.uri);
-
-    if (folder === undefined || workspaceClients.has(folder)) {
-        return;
-    }
-
-    // const executable = process.platform === 'win32' ? 'move-ls.exe' : 'move-ls';
-    // const cfgBinPath = workspace
-    //     .getConfiguration('move', document.uri)
-    //     .get<string>('languageServerPath');
-    // let binaryPath = cfgBinPath || path.join(EXTENSION_PATH, 'bin', executable);
-
-    const lspExecutable: lsp.Executable = {
-        command: languageServerPath,
-        options: { env: { RUST_LOG: 'info' } },
-    };
-
-    const serverOptions: lsp.ServerOptions = {
-        run: lspExecutable,
-        debug: lspExecutable,
-    };
-
-    const config = loadProjectConfig(document);
-    const clientOptions: lsp.LanguageClientOptions = {
-        outputChannel,
-        workspaceFolder: folder,
-        documentSelector: [
-            {
-                scheme: 'file',
-                language: 'move',
-                pattern: folder.uri.fsPath + '/**/*',
-            },
-        ],
-        initializationOptions: configToLsOptions(config),
-    };
-
-    const client = new lsp.LanguageClient(
-        'move-language-server',
-        'Move Language Server',
-        serverOptions,
-        clientOptions
-    );
-
-    client.start();
-
-    workspaceClients.set(folder, client);
 }

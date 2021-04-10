@@ -1,4 +1,3 @@
-import * as lc from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
 import { strict as nativeAssert } from 'assert';
 import { spawnSync } from 'child_process';
@@ -57,45 +56,6 @@ export const log = new (class {
     }
 })();
 
-export async function sendRequestWithRetry<TParam, TRet>(
-    client: lc.LanguageClient,
-    reqType: lc.RequestType<TParam, TRet, unknown>,
-    param: TParam,
-    token?: vscode.CancellationToken
-): Promise<TRet> {
-    // The sequence is `10 * (2 ** (2 * n))` where n is 1, 2, 3...
-    for (const delay of [40, 160, 640, 2560, 10240, null]) {
-        try {
-            return await (token
-                ? client.sendRequest(reqType, param, token)
-                : client.sendRequest(reqType, param));
-        } catch (error) {
-            if (delay === null) {
-                log.warn('LSP request timed out', {
-                    method: reqType.method,
-                    param,
-                    error,
-                });
-                throw error;
-            }
-            if (error.code === lc.LSPErrorCodes.RequestCancelled) {
-                throw error;
-            }
-
-            if (error.code !== lc.LSPErrorCodes.ContentModified) {
-                log.warn('LSP request failed', { method: reqType.method, param, error });
-                throw error;
-            }
-            await sleep(delay);
-        }
-    }
-    throw 'unreachable';
-}
-
-export function sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export type MoveDocument = vscode.TextDocument & { languageId: 'move' };
 export type MoveEditor = vscode.TextEditor & { document: MoveDocument };
 
@@ -121,29 +81,4 @@ export function isValidExecutable(path: string): boolean {
     printOutput(path, '--version:', res);
 
     return res.status === 0;
-}
-
-/** Sets ['when'](https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts) clause contexts */
-export function setContextValue(key: string, value: any): Thenable<void> {
-    return vscode.commands.executeCommand('setContext', key, value);
-}
-
-/**
- * Returns a higher-order function that caches the results of invoking the
- * underlying function.
- */
-export function memoize<Ret, TThis, Param extends string>(
-    func: (this: TThis, arg: Param) => Ret
-) {
-    const cache = new Map<string, Ret>();
-
-    return function (this: TThis, arg: Param) {
-        const cached = cache.get(arg);
-        if (cached) return cached;
-
-        const result = func.call(this, arg);
-        cache.set(arg, result);
-
-        return result;
-    };
 }
