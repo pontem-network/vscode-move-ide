@@ -1,5 +1,10 @@
 import * as lc from 'vscode-languageclient/node';
-import { LanguageClient, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import {
+    LanguageClient,
+    NodeModule,
+    ServerOptions,
+    TransportKind,
+} from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
 import { Metadata } from './metadata';
@@ -77,8 +82,8 @@ export function createAutocompleteServerClient(
     const jsModule = autocompleteServerUri.fsPath;
 
     const serverOptions: ServerOptions = {
-        run: { module: jsModule, transport: TransportKind.ipc },
-        debug: {
+        run: <NodeModule>{ module: jsModule, transport: TransportKind.ipc },
+        debug: <NodeModule>{
             module: jsModule,
             transport: TransportKind.ipc,
             options: { execArgv: ['--nolazy', '--inspect=6009'] },

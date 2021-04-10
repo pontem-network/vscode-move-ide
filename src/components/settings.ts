@@ -2,11 +2,6 @@ import * as vscode from 'vscode';
 import { log } from './util';
 import { Uri } from 'vscode';
 
-export interface ExecutableInfo {
-    version: string;
-    repository: string;
-}
-
 export class ExtensionSettings {
     readonly rootSection = 'move';
 
@@ -20,7 +15,6 @@ export class ExtensionSettings {
 
     private refreshLogging() {
         log.setEnabled(this.traceExtension);
-        // log.info("Extension version:", this.package.version);
 
         const cfg = Object.entries(this.config()).filter(
             ([_, val]) => !(val instanceof Function)
@@ -30,7 +24,6 @@ export class ExtensionSettings {
 
     // We don't do runtime config validation here for simplicity. More on stackoverflow:
     // https://stackoverflow.com/questions/60135780/what-is-the-best-way-to-type-check-the-configuration-for-vscode-extension
-
     private config(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration(this.rootSection);
     }
@@ -55,15 +48,11 @@ export class ExtensionSettings {
         return this.config().get<T>(path)!;
     }
 
-    get serverPath() {
-        return this.get<null | string>('server.path') ?? this.get<null | string>('serverPath');
-    }
-
     get traceExtension() {
         return this.get<boolean>('trace.extension');
     }
 
-    getExecutableVersion(name: string): string {
-        return require('./../../package.json')['executable_versions'][name];
+    get autocomplete() {
+        return this.get<boolean>('autocomplete');
     }
 }

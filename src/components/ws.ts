@@ -84,16 +84,16 @@ export class ClientWorkspace implements Disposable {
         );
         this.disposables.push(client.start());
 
-        const autocompleteClient = createAutocompleteServerClient(
-            this.extensionContext.extensionUri,
-            this.folder,
-            metadata
-        );
-        this.disposables.push(autocompleteClient.start());
-
-        if (dove) {
-            this.disposables.push(activateTaskProvider(this.folder, dove.executable));
+        if (this.settings.autocomplete) {
+            const autocompleteClient = createAutocompleteServerClient(
+                this.extensionContext.extensionUri,
+                this.folder,
+                metadata
+            );
+            this.disposables.push(autocompleteClient.start());
         }
+
+        this.disposables.push(activateTaskProvider(this.folder, dove.executable));
     }
 
     dispose(): any {

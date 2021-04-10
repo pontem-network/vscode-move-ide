@@ -21,6 +21,8 @@ import * as Parser from 'web-tree-sitter';
 import { suggestCompletion } from './suggest';
 
 import { MoveFile, MoveModule } from './parser';
+import { log } from '../components/util';
+import { MoveLanguageServerInitOpts } from '../components/client';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -47,6 +49,10 @@ const standardLibrary: Map<string, MoveModule> = new Map();
 // Same as tracked files but keeps only standard library files
 // indexed by their URI
 const standardLibraryFiles: Map<string, MoveFile> = new Map();
+
+interface LspOptions extends MoveLanguageServerInitOpts {
+    extensionPath: string;
+}
 
 // Connection initialization
 // Here we set initialization parameters as well as we initialize
@@ -83,7 +89,9 @@ connection.onInitialize(async (params: InitializeParams) => {
         };
     }
 
-    const lspOptions = params.initializationOptions;
+    const lspOptions = <LspOptions>params.initializationOptions;
+    log.info(`Autocomplete lsp options is ${lspOptions}`);
+
     const wasmPath = path.join(lspOptions.extensionPath, '/parsers/tree-sitter-move.wasm');
 
     await Parser.init()
@@ -93,24 +101,26 @@ connection.onInitialize(async (params: InitializeParams) => {
             return parser.setLanguage(Move);
         });
 
-    const stdlibPath = path.resolve(lspOptions.stdlib_folder);
+    if (lspOptions.stdlib_folder) {
+        const stdlibPath = path.resolve(lspOptions.stdlib_folder);
 
-    fs.readdirSync(stdlibPath)
-        .map((file) => path.join(stdlibPath, file))
-        .filter((file) => fs.lstatSync(file).isFile()) // TODO: recursive go over folders and collect all Move files if needed.
-        .filter((file) => path.extname(file) === '.move')
-        .map((file) => {
-            const uri = 'file://' + file;
-            const moveFile = new MoveFile(parser, uri);
+        fs.readdirSync(stdlibPath)
+            .map((file) => path.join(stdlibPath, file))
+            .filter((file) => fs.lstatSync(file).isFile()) // TODO: recursive go over folders and collect all Move files if needed.
+            .filter((file) => path.extname(file) === '.move')
+            .map((file) => {
+                const uri = 'file://' + file;
+                const moveFile = new MoveFile(parser, uri);
 
-            standardLibraryFiles.set(uri, moveFile);
+                standardLibraryFiles.set(uri, moveFile);
 
-            return moveFile.parse(fs.readFileSync(file).toString('utf-8'));
-        })
-        .reduce((acc, val) => acc.concat(val), [])
-        .forEach((mod) => {
-            standardLibrary.set(`0x1::${mod.name}`, mod);
-        });
+                return moveFile.parse(fs.readFileSync(file).toString('utf-8'));
+            })
+            .reduce((acc, val) => acc.concat(val), [])
+            .forEach((mod) => {
+                standardLibrary.set(`0x1::${mod.name}`, mod);
+            });
+    }
 
     return result;
 });

@@ -118,46 +118,13 @@
                 "path": "./syntaxes/mvir.tmLanguage.json"
             }
         ],
-        "menus": {
-            "commandPalette": [
-                {
-                    "command": "move.build",
-                    "when": "editorLangId == move"
-                },
-                {
-                    "command": "move.test",
-                    "when": "editorLangId == move"
-                }
-            ]
-        },
         "configuration": {
             "title": "Move Language",
             "properties": {
                 "move.autocomplete": {
                     "type": "boolean",
-                    "default": true,
+                    "default": false,
                     "description": "Enable autocompletion feature"
-                },
-                "move.blockchain": {
-                    "type": "string",
-                    "enum": [
-                        "libra",
-                        "dfinance",
-                        "diem"
-                    ],
-                    "default": "Diem",
-                    "description": "Move compiler and dialect to use: Dfinance or Diem",
-                    "scope": "resource"
-                },
-                "move.account": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Default account to use when compiling. If not set prompt will be shown on compile command"
-                },
-                "move.showModal": {
-                    "type": "boolean",
-                    "description": "Show notifications in modal window",
-                    "default": true
                 },
                 "move.languageServerPath": {
                     "type": "string",
@@ -168,6 +135,11 @@
                     "type": "string",
                     "default": "",
                     "description": "Custom path to Dove executable"
+                },
+                "move.trace.extension": {
+                    "description": "Enable logging of VS Code extension itself.",
+                    "type": "boolean",
+                    "default": false
                 }
             }
         }
