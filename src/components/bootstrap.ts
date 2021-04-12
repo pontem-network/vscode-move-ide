@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { Uri, workspace } from 'vscode';
+import { ExtensionContext, Uri } from 'vscode';
 import { PersistentState } from './persistent_state';
-import { assert, isValidExecutable, log } from './util';
+import { assert, isValidExecutable, log, uriExists } from './util';
 import { ExtensionSettings } from './settings';
 import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
@@ -13,12 +13,43 @@ function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     return undefined;
 }
 
+export async function bootstrap(
+    context: ExtensionContext,
+    state: PersistentState
+): Promise<[string, string]> {
+    const handleError = (binary: string, err: any) => {
+        let message = 'bootstrap error. ';
+
+        if (err.code === 'EBUSY' || err.code === 'ETXTBSY' || err.code === 'EPERM') {
+            message += `Other vscode windows might be using ${binary}, `;
+            message += 'you should close them and reload this window to retry. ';
+        }
+
+        if (!ExtensionSettings.logTrace) {
+            message += 'To enable verbose logs use { "move.trace.extension": true }';
+        }
+
+        log.error('Bootstrap error', err);
+        throw new Error(message);
+    };
+
+    const languageServerPath = await bootstrapLanguageServer(context, state).catch(
+        handleError.bind(null, 'move-language-server')
+    );
+
+    const doveExecutablePath = await bootstrapDoveExecutable(context, state).catch(
+        handleError.bind(null, 'dove')
+    );
+
+    return [languageServerPath, doveExecutablePath];
+}
+
 export async function bootstrapLanguageServer(
-    config: ExtensionSettings,
+    context: ExtensionContext,
     state: PersistentState
 ): Promise<string> {
     const path = await getBinaryPathEnsureExists(
-        config,
+        context,
         state,
         'move-language-server',
         'languageServerPath'
@@ -29,10 +60,10 @@ export async function bootstrapLanguageServer(
 }
 
 export async function bootstrapDoveExecutable(
-    config: ExtensionSettings,
+    context: ExtensionContext,
     state: PersistentState
 ): Promise<string> {
-    const path = await getBinaryPathEnsureExists(config, state, 'dove', 'doveExecutablePath');
+    const path = await getBinaryPathEnsureExists(context, state, 'dove', 'doveExecutablePath');
     log.info('Using dove binary at', path);
 
     if (!isValidExecutable(path)) {
@@ -43,13 +74,13 @@ export async function bootstrapDoveExecutable(
 }
 
 async function getBinaryPathEnsureExists(
-    config: ExtensionSettings,
+    context: ExtensionContext,
     state: PersistentState,
     binaryName: string,
     configPath: string | null
 ): Promise<string> {
     if (configPath) {
-        const explicitPath = config.get<string>(configPath);
+        const explicitPath = ExtensionSettings.get<string>(configPath);
         if (explicitPath) {
             if (explicitPath.startsWith('~/')) {
                 return os.homedir() + explicitPath.slice('~'.length);
@@ -68,12 +99,8 @@ async function getBinaryPathEnsureExists(
     const ext = platformLabel === 'win32' ? '.exe' : '';
     const releaseTag = '1.0.0';
     const fname = `${binaryName}-${releaseTag}-${platformLabel}${ext}`;
-    const dest = Uri.joinPath(config.globalStorageUri, fname);
-    const exists = await workspace.fs.stat(dest).then(
-        () => true,
-        () => false
-    );
-    if (exists) {
+    const dest = Uri.joinPath(context.globalStorageUri, fname);
+    if (await uriExists(dest)) {
         return dest.fsPath;
     }
 

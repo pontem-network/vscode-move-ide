@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Uri, workspace } from 'vscode';
 import { strict as nativeAssert } from 'assert';
 import { spawnSync } from 'child_process';
 import { inspect } from 'util';
@@ -81,4 +82,11 @@ export function isValidExecutable(path: string): boolean {
     printOutput(path, '--version:', res);
 
     return res.status === 0;
+}
+
+export async function uriExists(uri: Uri): Promise<boolean> {
+    return workspace.fs.stat(uri).then(
+        () => true,
+        () => false
+    );
 }

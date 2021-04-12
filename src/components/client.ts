@@ -7,34 +7,20 @@ import {
 } from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
-import { Metadata } from './metadata';
+import { ExtensionSettings } from './settings';
+import { log } from './util';
 
 export interface MoveLanguageServerInitOpts {
-    dialect: string;
+    dialect: 'polkadot' | 'libra' | 'dfinance';
     modules_folders: string[];
     stdlib_folder: string | undefined | null;
     sender_address: string | undefined | null;
 }
 
-function getServerInitOpts(metadata: Metadata): MoveLanguageServerInitOpts {
-    const module_folders: string[] = [];
-    for (const local_dep of metadata.package.local_dependencies) {
-        module_folders.push(local_dep.path);
-    }
-    module_folders.push(metadata.layout.module_dir);
-
-    return {
-        dialect: 'libra',
-        modules_folders: module_folders,
-        sender_address: metadata.package.account_address,
-        stdlib_folder: null,
-    };
-}
-
 export function createLanguageServerClient(
     languageServerPath: string,
     folder: vscode.WorkspaceFolder,
-    metadata: Metadata
+    serverInitOpts: MoveLanguageServerInitOpts
 ): lc.LanguageClient {
     const projectRoot = folder.uri.fsPath;
     const serverExecutable: lc.Executable = {
@@ -45,8 +31,11 @@ export function createLanguageServerClient(
         run: serverExecutable,
         debug: serverExecutable,
     };
-    const traceOutputChannel = vscode.window.createOutputChannel('move-language-server');
-
+    if (ExtensionSettings.logTrace) {
+        log.debug(
+            `Starting language server with configuration: ${JSON.stringify(serverInitOpts)}`
+        );
+    }
     const clientOptions: lc.LanguageClientOptions = {
         documentSelector: [
             {
@@ -55,13 +44,12 @@ export function createLanguageServerClient(
                 pattern: projectRoot + '/**/*',
             },
         ],
-        outputChannel: traceOutputChannel,
-        initializationOptions: getServerInitOpts(metadata),
+        initializationOptions: serverInitOpts,
         workspaceFolder: folder,
     };
     return new lc.LanguageClient(
         'move-language-server',
-        'Move Language Server',
+        `Move LS: ${projectRoot}`,
         serverOptions,
         clientOptions
     );
@@ -70,7 +58,7 @@ export function createLanguageServerClient(
 export function createAutocompleteServerClient(
     extensionUri: Uri,
     folder: vscode.WorkspaceFolder,
-    metadata: Metadata
+    serverInitOpts: MoveLanguageServerInitOpts
 ) {
     const projectRoot = folder.uri.fsPath;
     const autocompleteServerUri = Uri.joinPath(
@@ -99,9 +87,9 @@ export function createAutocompleteServerClient(
                 pattern: projectRoot + '/**/*',
             },
         ],
-        outputChannel: traceOutputChannel,
+        traceOutputChannel,
         synchronize: {},
-        initializationOptions: Object.assign(getServerInitOpts(metadata), {
+        initializationOptions: Object.assign(serverInitOpts, {
             extensionPath: extensionUri.fsPath,
         }),
         workspaceFolder: folder,

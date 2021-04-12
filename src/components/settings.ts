@@ -1,31 +1,11 @@
 import * as vscode from 'vscode';
-import { log } from './util';
-import { Uri } from 'vscode';
+import { EXTENSION_SETTINGS_ROOT_SECTION } from '../extension';
 
 export class ExtensionSettings {
-    readonly rootSection = 'move';
-
-    readonly globalStorageUri: Uri;
-
-    constructor(ctx: vscode.ExtensionContext) {
-        this.globalStorageUri = ctx.globalStorageUri;
-
-        this.refreshLogging();
-    }
-
-    private refreshLogging() {
-        log.setEnabled(this.traceExtension);
-
-        const cfg = Object.entries(this.config()).filter(
-            ([_, val]) => !(val instanceof Function)
-        );
-        log.info('Using configuration', Object.fromEntries(cfg));
-    }
-
     // We don't do runtime config validation here for simplicity. More on stackoverflow:
     // https://stackoverflow.com/questions/60135780/what-is-the-best-way-to-type-check-the-configuration-for-vscode-extension
-    private config(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration(this.rootSection);
+    private static config(): vscode.WorkspaceConfiguration {
+        return vscode.workspace.getConfiguration(EXTENSION_SETTINGS_ROOT_SECTION);
     }
 
     /**
@@ -44,15 +24,27 @@ export class ExtensionSettings {
      * ```
      * So this getter handles this quirk by not requiring the caller to use postfix `!`
      */
-    get<T>(path: string): T {
-        return this.config().get<T>(path)!;
+    static get<T>(path: string): T {
+        return ExtensionSettings.config().get<T>(path)!;
     }
 
-    get traceExtension() {
-        return this.get<boolean>('trace.extension');
+    static get logTrace(): boolean {
+        return this.get('extension.trace');
     }
 
-    get autocomplete() {
-        return this.get<boolean>('autocomplete');
+    static get autocomplete(): boolean {
+        return this.get('autocomplete');
+    }
+
+    static get blockchainDialect(): any {
+        return this.get('project.blockchain');
+    }
+
+    static get modulePaths(): string[] {
+        return this.get('project.modulePaths');
+    }
+
+    static get accountAddress(): string {
+        return this.get('project.account_address');
     }
 }

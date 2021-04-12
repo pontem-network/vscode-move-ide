@@ -72,8 +72,7 @@
         "commands": [
             {
                 "command": "move.reload",
-                "when": "resourceLangId == move",
-                "title": "Restart move-language-server",
+                "title": "Reload move-language-server",
                 "category": "Move"
             }
         ],
@@ -111,17 +110,40 @@
                 "move.languageServerPath": {
                     "type": "string",
                     "default": "",
-                    "description": "Custom path to Move Language Server binary"
+                    "description": "Custom path to Move Language Server executable"
                 },
                 "move.doveExecutablePath": {
                     "type": "string",
                     "default": "",
                     "description": "Custom path to Dove executable"
                 },
-                "move.trace.extension": {
-                    "description": "Enable logging of VS Code extension itself.",
+                "move.extension.trace": {
                     "type": "boolean",
-                    "default": false
+                    "default": false,
+                    "description": "Enable logging of VS Code extension itself"
+                },
+                "move.project.modulePaths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Module item, can be a directory or an individual file"
+                    },
+                    "default": [],
+                    "description": "List of module paths to use in the project. Overridden by the Dove.toml configuration, if present."
+                },
+                "move.project.account_address": {
+                    "type": "string",
+                    "default": "0x0000000000000000000000000000000000000001",
+                    "description": "Account address"
+                },
+                "move.project.blockchain": {
+                    "enum": [
+                        "libra",
+                        "polkadot",
+                        "dfinance"
+                    ],
+                    "default": "diem",
+                    "description": "Which blockchain dialect to use"
                 }
             }
         }
