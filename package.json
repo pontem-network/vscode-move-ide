@@ -1,7 +1,7 @@
 {
     "name": "move-language",
     "version": "1.0.0",
-    "description": "Move/mvir IDE for VSCode",
+    "description": "Move IDE for VSCode",
     "publisher": "PontemNetwork",
     "displayName": "Move Language",
     "categories": [
@@ -42,7 +42,6 @@
         "vscode": "^1.55.0"
     },
     "activationEvents": [
-        "onLanguage:mvir",
         "onLanguage:move",
         "workspaceContains:**/Dove.toml"
     ],
@@ -92,18 +91,6 @@
                     ".move"
                 ],
                 "configuration": "./language-configuration.json"
-            },
-            {
-                "id": "mvir",
-                "aliases": [
-                    "MVIR",
-                    "mvir",
-                    "Move IR"
-                ],
-                "extensions": [
-                    ".mvir"
-                ],
-                "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
@@ -111,11 +98,6 @@
                 "language": "move",
                 "scopeName": "source.move",
                 "path": "./syntaxes/move.tmLanguage.json"
-            },
-            {
-                "language": "mvir",
-                "scopeName": "source.mvir",
-                "path": "./syntaxes/mvir.tmLanguage.json"
             }
         ],
         "configuration": {
