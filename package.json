@@ -117,10 +117,26 @@
                     "default": "",
                     "description": "Custom path to Dove executable"
                 },
-                "move.extension.trace": {
+                "move.trace.extension": {
                     "type": "boolean",
                     "default": false,
                     "description": "Enable logging of VS Code extension itself"
+                },
+                "move.trace.server": {
+                    "type": "string",
+                    "scope": "window",
+                    "enum": [
+                        "off",
+                        "messages",
+                        "verbose"
+                    ],
+                    "enumDescriptions": [
+                        "No traces",
+                        "Error only",
+                        "Full log"
+                    ],
+                    "default": "off",
+                    "description": "Trace requests to the move-language-server (this is usually overly verbose and not recommended for regular users)."
                 },
                 "move.project.modulePaths": {
                     "type": "array",

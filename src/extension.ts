@@ -46,9 +46,9 @@ async function tryActivate(context: vscode.ExtensionContext) {
 
     // Reloading is inspired by @DanTup maneuver: https://github.com/microsoft/vscode/issues/45774#issuecomment-373423895
     context.subscriptions.push(
-        commands.registerCommand('move.reload', async () => {
+        commands.registerCommand('move.reload', () => {
             void vscode.window.showInformationMessage('Reloading Move IDE...');
-            await deactivate();
+            deactivate();
             while (context.subscriptions.length > 0) {
                 try {
                     // unregisters command
@@ -57,7 +57,7 @@ async function tryActivate(context: vscode.ExtensionContext) {
                     log.error('Dispose error:', err);
                 }
             }
-            await activate(context).catch(log.error);
+            activate(context).catch(log.error);
         })
     );
 

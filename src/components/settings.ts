@@ -29,7 +29,7 @@ export class ExtensionSettings {
     }
 
     static get logTrace(): boolean {
-        return this.get('extension.trace');
+        return this.get('trace.extension');
     }
 
     static get autocomplete(): boolean {

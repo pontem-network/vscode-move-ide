@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Disposable, Uri, workspace } from 'vscode';
+import * as lc from 'vscode-languageclient/node';
 import { Dove, getServerInitOptsFromMetadata } from './dove';
 import {
     createAutocompleteServerClient,
@@ -62,14 +63,15 @@ export class ClientWorkspaceFactory implements Disposable {
         if (ExtensionSettings.logTrace) {
             log.debug('Disposing ClientWorkspaceFactory');
         }
-        return Disposable.from(...this.workspaces.values()).dispose();
+        return Promise.all([...this.workspaces.values()].map((ws) => ws.stop()));
     }
 }
 
 // We run a single server/client pair per workspace folder.
 // This class contains all the per-client and per-workspace stuff.
-export class ClientWorkspace implements Disposable {
+export class ClientWorkspace {
     private readonly disposables: Disposable[] = [];
+    private readonly languageClients: lc.LanguageClient[] = [];
 
     constructor(
         readonly folder: vscode.WorkspaceFolder,
@@ -102,6 +104,7 @@ export class ClientWorkspace implements Disposable {
             this.folder,
             serverInitOpts
         );
+        this.languageClients.push(client);
         this.disposables.push(client.start());
 
         if (ExtensionSettings.autocomplete) {
@@ -110,6 +113,7 @@ export class ClientWorkspace implements Disposable {
                 this.folder,
                 serverInitOpts
             );
+            this.languageClients.push(autocompleteClient);
             this.disposables.push(autocompleteClient.start());
         }
 
@@ -118,12 +122,17 @@ export class ClientWorkspace implements Disposable {
         }
     }
 
-    async dispose(): Promise<any> {
+    async stop(): Promise<any> {
         if (ExtensionSettings.logTrace)
-            log.debug(
-                `Disposing ClientWorkspace instance for "${this.folder.uri.toString()}"`
-            );
+            log.debug(`Stopping language clients for "${this.folder.uri.toString()}"`);
 
-        return Disposable.from(...this.disposables).dispose();
+        for (const client of this.languageClients) {
+            await client.stop();
+        }
+
+        if (ExtensionSettings.logTrace)
+            log.debug(`Disposing ClientWorkspace for "${this.folder.uri.toString()}"`);
+
+        this.disposables.forEach((d) => void d.dispose());
     }
 }

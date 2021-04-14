@@ -6,7 +6,7 @@ import {
     TransportKind,
 } from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
-import { Uri } from 'vscode';
+import { Uri, window } from 'vscode';
 import { ExtensionSettings } from './settings';
 import { log } from './util';
 
@@ -46,9 +46,10 @@ export function createLanguageServerClient(
         ],
         initializationOptions: serverInitOpts,
         workspaceFolder: folder,
+        traceOutputChannel: window.createOutputChannel('move-language-server Trace Output'),
     };
     return new lc.LanguageClient(
-        'move-language-server',
+        'move',
         `Move LS: ${projectRoot}`,
         serverOptions,
         clientOptions
@@ -59,7 +60,7 @@ export function createAutocompleteServerClient(
     extensionUri: Uri,
     folder: vscode.WorkspaceFolder,
     serverInitOpts: MoveLanguageServerInitOpts
-) {
+): lc.LanguageClient {
     const projectRoot = folder.uri.fsPath;
     const autocompleteServerUri = Uri.joinPath(
         extensionUri,
