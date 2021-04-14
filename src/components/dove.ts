@@ -3,6 +3,8 @@ import { log } from './util';
 import { spawn } from 'child_process';
 import { MoveLanguageServerInitOpts } from './client';
 
+type MoveDialect = 'dfinance' | 'libra' | 'polkadot';
+
 interface LayoutInfo {
     module_dir: string;
     script_dir: string;
@@ -21,6 +23,7 @@ interface PackageInfo {
     local_dependencies: string[];
     git_dependencies: string[];
     blockchain_api: string | null;
+    dialect: MoveDialect;
 }
 
 export interface Metadata {
@@ -36,7 +39,7 @@ export function getServerInitOptsFromMetadata(metadata: Metadata): MoveLanguageS
     // module_folders.push(metadata.layout.module_dir);
 
     return {
-        dialect: 'dfinance',
+        dialect: metadata.package.dialect,
         modules_folders: module_folders,
         sender_address: metadata.package.account_address,
         stdlib_folder: null,
@@ -47,7 +50,7 @@ export class Dove {
     constructor(readonly executable: string, private readonly logTrace: boolean) {}
 
     async metadata(folder: vscode.WorkspaceFolder): Promise<Metadata | undefined> {
-        let metadata_json = await this.runCommand('metadata', ['--json'], folder.uri.fsPath);
+        let metadata_json = await this.runCommand('metadata', [], folder.uri.fsPath);
         if (!metadata_json) return undefined;
 
         metadata_json = metadata_json.trim();
