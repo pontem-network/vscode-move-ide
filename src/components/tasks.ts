@@ -12,10 +12,6 @@ export function activateTaskProvider(
     return tasks.registerTaskProvider(TASK_TYPE, provider);
 }
 
-interface DoveTaskDefinition extends vscode.TaskDefinition {
-    subcommand: string;
-}
-
 class DoveTaskProvider implements vscode.TaskProvider {
     constructor(
         private readonly target: vscode.WorkspaceFolder,
@@ -30,14 +26,15 @@ class DoveTaskProvider implements vscode.TaskProvider {
 
         const tasks: vscode.Task[] = [];
         for (const defn of defs) {
-            const task = await buildDoveTask(
-                this.doveExecutable,
+            const execution = new vscode.ShellExecution(this.doveExecutable, [defn.command], {
+                cwd: this.target.uri.fsPath,
+            });
+            const task = new vscode.Task(
+                { type: TASK_TYPE, subcommand: defn.command },
                 this.target,
-                {
-                    type: TASK_TYPE,
-                    subcommand: defn.command,
-                },
-                `dove ${defn.command}`
+                `dove ${defn.command}`,
+                TASK_SOURCE,
+                execution
             );
             task.group = defn.group;
             tasks.push(task);
@@ -48,17 +45,4 @@ class DoveTaskProvider implements vscode.TaskProvider {
     async resolveTask(task: vscode.Task): Promise<vscode.Task | undefined> {
         return undefined;
     }
-}
-
-async function buildDoveTask(
-    doveExecutable: string,
-    target: vscode.WorkspaceFolder,
-    definition: DoveTaskDefinition,
-    label: string
-): Promise<vscode.Task> {
-    const execution = new vscode.ShellExecution(doveExecutable, [definition.subcommand], {
-        cwd: target.uri.fsPath,
-    });
-    const task = new vscode.Task(definition, target, label, TASK_SOURCE, execution);
-    return task;
 }

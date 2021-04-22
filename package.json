@@ -50,14 +50,8 @@
         "taskDefinitions": [
             {
                 "type": "dove",
-                "required": [
-                    "command"
-                ],
                 "properties": {
-                    "label": {
-                        "type": "string"
-                    },
-                    "command": {
+                    "subcommand": {
                         "type": "string"
                     },
                     "args": {
@@ -66,7 +60,10 @@
                             "type": "string"
                         }
                     }
-                }
+                },
+                "required": [
+                    "subcommand"
+                ]
             }
         ],
         "commands": [
