@@ -100,6 +100,7 @@
                         { "include": "#const" },
                         { "include": "#resource" },
                         { "include": "#struct" },
+                        { "include": "#resource" },
                         { "include": "#public_fun" },
                         { "include": "#native_fun" },
                         { "include": "#fun" },
@@ -226,6 +227,17 @@
                     ]
                 }
             ]
+        },
+
+        "resource": {
+            "name": "meta.resource.move",
+            "comment": "Resource definition",
+            "begin": "\\b(resource)\\b",
+            "beginCaptures": {
+                "1": { "name": "storage.modifier.type.move" }
+            },
+            "end": "(?<=})",
+            "patterns": [{ "include": "#struct" }]
         },
 
         "native_fun": {
