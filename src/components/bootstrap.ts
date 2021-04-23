@@ -6,6 +6,8 @@ import { ExtensionSettings } from './settings';
 import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
 
+const RELEASE_TAG = '1.1.1';
+
 function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     if (name === 'win32') return 'win';
     if (name == 'linux') return 'linux';
@@ -96,9 +98,8 @@ async function getBinaryPathEnsureExists(
         throw new Error(`${binaryName} executable is not available.`);
     }
 
-    const releaseTag = '1.1.1';
     const release = await downloadWithRetryDialog(state, async () => {
-        return await fetchRelease(releaseTag, state.githubToken);
+        return await fetchRelease(RELEASE_TAG, state.githubToken);
     });
     const asset = release.assets.find(
         ({ browser_download_url, name }) =>
