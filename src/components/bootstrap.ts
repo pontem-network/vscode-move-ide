@@ -88,7 +88,6 @@ async function getBinaryPathEnsureExists(
             return explicitPath;
         }
     }
-
     const platformLabel = getPlatformLabel(process.platform);
     if (platformLabel === undefined) {
         await vscode.window.showErrorMessage(
@@ -96,14 +95,8 @@ async function getBinaryPathEnsureExists(
         );
         throw new Error(`${binaryName} executable is not available.`);
     }
-    const ext = platformLabel === 'win32' ? '.exe' : '';
-    const releaseTag = '1.0.0';
-    const fname = `${binaryName}-${releaseTag}-${platformLabel}${ext}`;
-    const dest = Uri.joinPath(context.globalStorageUri, fname);
-    if (await uriExists(dest)) {
-        return dest.fsPath;
-    }
 
+    const releaseTag = '1.1.1';
     const release = await downloadWithRetryDialog(state, async () => {
         return await fetchRelease(releaseTag, state.githubToken);
     });
@@ -112,6 +105,12 @@ async function getBinaryPathEnsureExists(
             name.startsWith(binaryName) && name.includes(platformLabel)
     );
     assert(!!asset, `Bad release: ${JSON.stringify(release)}`);
+
+    const fname = asset.name;
+    const dest = Uri.joinPath(context.globalStorageUri, fname);
+    if (await uriExists(dest)) {
+        return dest.fsPath;
+    }
 
     await downloadWithRetryDialog(state, async () => {
         await download({

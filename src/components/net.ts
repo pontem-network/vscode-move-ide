@@ -11,7 +11,7 @@ import { PersistentState } from './persistent_state';
 const pipeline = util.promisify(stream.pipeline);
 
 const GITHUB_API_ENDPOINT_URL = 'https://api.github.com';
-const GITHUB_REPOSITORY = 'dfinance/move-tools';
+const GITHUB_REPOSITORY = 'pontem-network/move-tools';
 
 export async function fetchRelease(
     releaseTag: string,
