@@ -21,12 +21,18 @@ Out-of-box the extension only supports syntax highlighting.
 
 To get advanced features like checking code for compiler errors in the editor, you need to initialize your Dove project:
 
-TODO: add screenshot to execute `dove init` command
-TODO: add description of what is going to happen
-_ directory layout
-_ dove auto tasks \* dove.toml format and dependencies
+1. Run `Initialize Dove project` command from Command Palette
+2. This will create following directory structure in the root of your project:
 
-TODO: different settings (dovePath and languageServerPath)
+```
+    /scripts
+    /modules
+    /tests
+    Dove.toml
+```
+
+For more information of Dove and Dove.toml file
+see [https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove)
 
 **Additional configuration options:**
 

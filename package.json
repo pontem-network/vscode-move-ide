@@ -74,7 +74,7 @@
             },
             {
                 "command": "move.doveInit",
-                "title": "Initialize current workspace folder as a Dove project",
+                "title": "Initialize Dove project",
                 "category": "Move"
             }
         ],
