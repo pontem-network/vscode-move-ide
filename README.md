@@ -1,52 +1,32 @@
 # Move Language extension for VSCode
 
-Built by developer for developers, this extension will simplify your Move development and will make your first
+Built by developers for developers, this extension will simplify your Move development and will make your first
 experience with Move less painful.
 
--   [Jump to setup](#setup)
 -   [Move Language Documentation](https://developers.diem.com/docs/move/overview)
 -   [Move Whitepaper](https://developers.diem.com/main/docs/move-paper)
 
-**What's inside**:
+Supports:
 
--   Move syntax highlighting + spec support
-
--   Code Completion for imported modules and built-ins
-
--   [Move Language Server](https://github.com/pontem-network/move-tools#language-server) and syntax error check!
-
--   Default `build` and `test` tasks based on Dove utility.
-
-    https://github.com/dfinance/move-tools#dove
-
--   `{{sender}}` pattern support for address in your modules and scripts
+-   Syntax highlighting
+-   On-the-fly compiler checks via [Move Language Server]()
+-   Compile, run and test Move code via integration with [Dove]()
 
 Install extension from
 the [marketplace](https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language) to start.
 
-## Syntax highlighting
-
-![Move highlighting](https://raw.githubusercontent.com/pontem-network/vscode-move-ide/master/img/move.highlight.jpg)
-
-<a name="setup"></a>
-
 ## Setup
 
-### Recommended directory structure
+Out-of-box the extension only supports syntax highlighting.
 
-I highly recommend you using following directory structure:
+To get advanced features like checking code for compiler errors in the editor, you need to initialize your Dove project:
 
-```text
-modules/       - here you'll put your modules (module.move)
-scripts/       - same here! scripts! (script.move)
-out/           - compiler output directory (module.mv or module.mv.json)
-```
+TODO: add screenshot to execute `dove init` command
+TODO: add description of what is going to happen
+_ directory layout
+_ dove auto tasks \* dove.toml format and dependencies
 
-**Comments:**
-
--   network: `diem` or `dfinance` (diem is default);
--   sender: account from which you're going to deploy/run scripts;
--   compilerDir: compiler output directory;
+TODO: different settings (dovePath and languageServerPath)
 
 **Additional configuration options:**
 
@@ -59,7 +39,7 @@ out/           - compiler output directory (module.mv or module.mv.json)
 Previously developed by [Dfinance](https://dfinance.co) team and published under another publisher
 as [Move IDE](https://marketplace.visualstudio.com/items?itemName=damirka.move-ide).
 
-Currently supported by [Pontem Network](https://pontem.network).
+Supported by [Pontem Network](https://pontem.network).
 
 ## Contribution
 

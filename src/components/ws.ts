@@ -2,14 +2,12 @@ import * as vscode from 'vscode';
 import { Disposable, Uri, workspace } from 'vscode';
 import * as lc from 'vscode-languageclient/node';
 import { Dove, getServerInitOptsFromMetadata } from './dove';
-import {
-    createAutocompleteServerClient,
-    createLanguageServerClient,
-    MoveLanguageServerInitOpts,
-} from './client';
+import { createAutocompleteServerClient, createLanguageServerClient } from './client';
 import { isMoveEditor, log, uriExists } from './util';
 import { activateTaskProvider } from './tasks';
 import { ExtensionSettings } from './settings';
+import { bootstrap } from './bootstrap';
+import { PersistentState } from './persistent_state';
 
 async function isDoveInitializedProject(folder: vscode.WorkspaceFolder): Promise<boolean> {
     const tomlFileUri = Uri.joinPath(folder.uri, 'Dove.toml');
@@ -26,11 +24,12 @@ export class ClientWorkspaceFactory implements Disposable {
     // Don't use URI as it's unreliable the same path might not become the same URI.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     private readonly workspaces: Map<vscode.WorkspaceFolder, ClientWorkspace> = new Map();
+    private doveExecutable: string | null = null;
+    private languageServerExecutable: string | null = null;
 
     constructor(
         private readonly extensionContext: vscode.ExtensionContext,
-        private readonly doveExecutable: string,
-        private readonly languageServerExecutable: string
+        private readonly state: PersistentState
     ) {}
 
     async initClientWorkspace(editor: vscode.TextEditor | undefined) {
@@ -39,6 +38,24 @@ export class ClientWorkspaceFactory implements Disposable {
         const folder = workspace.getWorkspaceFolder(editor.document.uri);
         if (!folder) return;
 
+        if (!(await isDoveInitializedProject(folder))) {
+            log.debug(`Not a Dove project root: ${folder.uri.fsPath}`);
+            return;
+        }
+
+        if (this.doveExecutable == null || this.languageServerExecutable == null) {
+            const execs = await bootstrap(this.extensionContext, this.state);
+
+            this.doveExecutable = execs.doveExecutablePath;
+            log.debug(`Set ClientWorkspaceFactory.doveExecutable to ${this.doveExecutable}`);
+
+            this.languageServerExecutable = execs.languageServerPath;
+            log.debug(
+                `Set ClientWorkspaceFactory.languageServerExecutable to ${this.languageServerExecutable}`
+            );
+        }
+
+        log.debug(`initClientWorkspace called inside ${folder.uri.fsPath}`);
         let ws = this.workspaces.get(folder);
         if (!ws && isMoveEditor(editor)) {
             ws = new ClientWorkspace(
@@ -48,10 +65,11 @@ export class ClientWorkspaceFactory implements Disposable {
             );
             this.workspaces.set(folder, ws);
 
-            let dove: Dove | undefined = undefined;
-            if (await isDoveInitializedProject(folder)) {
-                dove = new Dove(this.doveExecutable, ExtensionSettings.logTrace);
-            }
+            const dove = new Dove(this.doveExecutable);
+            // let dove: Dove | undefined = undefined;
+            // if (await isDoveInitializedProject(folder)) {
+            //     dove = new Dove(this.doveExecutable, ExtensionSettings.logTrace);
+            // }
             await ws.start(dove);
         }
         if (ws) {
@@ -60,9 +78,7 @@ export class ClientWorkspaceFactory implements Disposable {
     }
 
     dispose() {
-        if (ExtensionSettings.logTrace) {
-            log.debug('Disposing ClientWorkspaceFactory');
-        }
+        log.debug('Disposing ClientWorkspaceFactory');
         return Promise.all([...this.workspaces.values()].map((ws) => ws.stop()));
     }
 }
@@ -79,26 +95,23 @@ export class ClientWorkspace {
         private readonly languageServerPath: string
     ) {}
 
-    async start(dove: Dove | undefined) {
-        if (ExtensionSettings.logTrace)
-            log.debug(
-                `Starting new ClientWorkspace instance at ${this.folder.uri.toString()}`
-            );
+    async start(dove: Dove) {
+        log.debug(`Starting new ClientWorkspace instance at ${this.folder.uri.toString()}`);
 
-        let serverInitOpts: MoveLanguageServerInitOpts;
-        if (dove !== undefined) {
-            const metadata = await dove.metadata(this.folder);
-            if (!metadata) return;
-            serverInitOpts = getServerInitOptsFromMetadata(metadata);
-        } else {
-            serverInitOpts = {
-                dialect: ExtensionSettings.blockchainDialect,
-                modules_folders: ExtensionSettings.modulePaths,
-                sender_address: ExtensionSettings.accountAddress,
-                stdlib_folder: null,
-            };
-        }
+        const metadata = await dove.metadata(this.folder);
+        if (!metadata) return;
 
+        // if (dove !== undefined) {
+        // } else {
+        //     serverInitOpts = {
+        //         dialect: ExtensionSettings.blockchainDialect,
+        //         modules_folders: ExtensionSettings.modulePaths,
+        //         sender_address: ExtensionSettings.accountAddress,
+        //         stdlib_folder: null,
+        //     };
+        // }
+
+        const serverInitOpts = getServerInitOptsFromMetadata(metadata);
         const client = createLanguageServerClient(
             this.languageServerPath,
             this.folder,
@@ -117,22 +130,19 @@ export class ClientWorkspace {
             this.disposables.push(autocompleteClient.start());
         }
 
-        if (dove !== undefined) {
-            this.disposables.push(activateTaskProvider(this.folder, dove.executable));
-        }
+        this.disposables.push(activateTaskProvider(this.folder, dove.executable));
+        // if (dove !== undefined) {
+        //     this.disposables.push(activateTaskProvider(this.folder, dove.executable));
+        // }
     }
 
     async stop(): Promise<any> {
-        if (ExtensionSettings.logTrace)
-            log.debug(`Stopping language clients for "${this.folder.uri.toString()}"`);
-
+        log.debug(`Stopping language clients for "${this.folder.uri.toString()}"`);
         for (const client of this.languageClients) {
             await client.stop();
         }
 
-        if (ExtensionSettings.logTrace)
-            log.debug(`Disposing ClientWorkspace for "${this.folder.uri.toString()}"`);
-
+        log.debug(`Disposing ClientWorkspace for "${this.folder.uri.toString()}"`);
         this.disposables.forEach((d) => void d.dispose());
     }
 }

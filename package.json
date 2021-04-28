@@ -71,6 +71,11 @@
                 "command": "move.reload",
                 "title": "Reload move-language-server",
                 "category": "Move"
+            },
+            {
+                "command": "move.doveInit",
+                "title": "Initialize current workspace folder as a Dove project",
+                "category": "Move"
             }
         ],
         "languages": [
@@ -134,29 +139,6 @@
                     ],
                     "default": "off",
                     "description": "Trace requests to the move-language-server (this is usually overly verbose and not recommended for regular users)."
-                },
-                "move.project.modulePaths": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "description": "Module item, can be a directory or an individual file"
-                    },
-                    "default": [],
-                    "description": "List of module paths to use in the project. Overridden by the Dove.toml configuration, if present."
-                },
-                "move.project.account_address": {
-                    "type": "string",
-                    "default": "0x0000000000000000000000000000000000000001",
-                    "description": "Account address"
-                },
-                "move.project.blockchain": {
-                    "enum": [
-                        "libra",
-                        "polkadot",
-                        "dfinance"
-                    ],
-                    "default": "diem",
-                    "description": "Which blockchain dialect to use"
                 }
             }
         }

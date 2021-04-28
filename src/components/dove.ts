@@ -47,18 +47,25 @@ export function getServerInitOptsFromMetadata(metadata: Metadata): MoveLanguageS
 }
 
 export class Dove {
-    constructor(readonly executable: string, private readonly logTrace: boolean) {}
+    constructor(readonly executable: string) {
+        log.debug(`Create Dove object with executable ${executable}`);
+    }
 
     async metadata(folder: vscode.WorkspaceFolder): Promise<Metadata | undefined> {
         let metadata_json = await this.runCommand('metadata', [], folder.uri.fsPath);
-        if (!metadata_json) return undefined;
-
-        metadata_json = metadata_json.trim();
-        if (this.logTrace) {
-            log.debug(`Fetched project metadata ${metadata_json}`);
+        if (!metadata_json) {
+            log.debug(`"dove metadata" failed at ${folder.uri.fsPath}`);
+            return undefined;
         }
 
+        metadata_json = metadata_json.trim();
+        log.debug(`Fetched project metadata ${metadata_json}`);
+
         return JSON.parse(metadata_json);
+    }
+
+    async init(folder: vscode.WorkspaceFolder): Promise<void> {
+        await this.runCommand('init', [], folder.uri.fsPath);
     }
 
     private async runCommand(
@@ -66,10 +73,11 @@ export class Dove {
         args: string[],
         cwd: string
     ): Promise<string | undefined> {
-        let stdout = '';
+        log.debug(`Running dove command ${JSON.stringify([command, ...args])}`);
 
+        let stdout = '';
         let stderr = '';
-        const execute = new Promise((resolve) => {
+        await new Promise((resolve) => {
             const process = spawn(this.executable, [command, ...args], { cwd });
             process.stdout.on('data', (data) => {
                 stdout += data;
@@ -77,11 +85,11 @@ export class Dove {
             process.stderr.on('data', (data) => {
                 stderr += data;
             });
-            process.on('close', (code) => {
+            process.on('close', () => {
                 resolve(undefined);
             });
         });
-        await execute;
+        log.debug(`finishing stdout: ${stdout}`);
 
         if (stderr) {
             const executed = [this.executable, command, ...args].join(' ');

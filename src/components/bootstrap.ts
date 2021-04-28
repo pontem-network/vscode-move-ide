@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { ExtensionContext, Uri } from 'vscode';
+import { ExtensionContext, Uri, workspace } from 'vscode';
 import { PersistentState } from './persistent_state';
 import { assert, isValidExecutable, log, uriExists } from './util';
 import { ExtensionSettings } from './settings';
 import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
 
-const RELEASE_TAG = '1.1.1';
+const RELEASE_TAG = '1.1.4';
 
 function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     if (name === 'win32') return 'win';
@@ -15,10 +15,18 @@ function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     return undefined;
 }
 
+interface Executables {
+    doveExecutablePath: string;
+    languageServerPath: string;
+}
+
 export async function bootstrap(
     context: ExtensionContext,
     state: PersistentState
-): Promise<[string, string]> {
+): Promise<Executables> {
+    log.debug(`Directory for extension binaries is ${context.globalStorageUri}`);
+    await workspace.fs.createDirectory(context.globalStorageUri);
+
     const handleError = (binary: string, err: any) => {
         let message = 'bootstrap error. ';
 
@@ -43,7 +51,7 @@ export async function bootstrap(
         handleError.bind(null, 'dove')
     );
 
-    return [languageServerPath, doveExecutablePath];
+    return { doveExecutablePath, languageServerPath };
 }
 
 export async function bootstrapLanguageServer(
