@@ -104,11 +104,6 @@
         "configuration": {
             "title": "Move Language",
             "properties": {
-                "move.autocomplete": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable autocompletion feature"
-                },
                 "move.languageServerPath": {
                     "type": "string",
                     "default": "",

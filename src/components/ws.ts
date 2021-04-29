@@ -120,15 +120,15 @@ export class ClientWorkspace {
         this.languageClients.push(client);
         this.disposables.push(client.start());
 
-        if (ExtensionSettings.autocomplete) {
-            const autocompleteClient = createAutocompleteServerClient(
-                this.extensionContext.extensionUri,
-                this.folder,
-                serverInitOpts
-            );
-            this.languageClients.push(autocompleteClient);
-            this.disposables.push(autocompleteClient.start());
-        }
+        // if (ExtensionSettings.autocomplete) {
+        //     const autocompleteClient = createAutocompleteServerClient(
+        //         this.extensionContext.extensionUri,
+        //         this.folder,
+        //         serverInitOpts
+        //     );
+        //     this.languageClients.push(autocompleteClient);
+        //     this.disposables.push(autocompleteClient.start());
+        // }
 
         this.disposables.push(activateTaskProvider(this.folder, dove.executable));
         // if (dove !== undefined) {
