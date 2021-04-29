@@ -77,7 +77,7 @@ export class Dove {
 
         let stdout = '';
         let stderr = '';
-        await new Promise((resolve) => {
+        const rc = await new Promise((resolve) => {
             const process = spawn(this.executable, [command, ...args], { cwd });
             process.stdout.on('data', (data) => {
                 stdout += data;
@@ -85,17 +85,19 @@ export class Dove {
             process.stderr.on('data', (data) => {
                 stderr += data;
             });
-            process.on('close', () => {
-                resolve(undefined);
+            process.on('close', (code) => {
+                resolve(code);
             });
         });
         log.debug(`finishing stdout: ${stdout}`);
 
-        if (stderr) {
-            const executed = [this.executable, command, ...args].join(' ');
-            log.error(`Error running command: ${executed}\n${stderr}`);
-            return undefined;
-        }
+        log.warn(
+            `Error running command: ${[this.executable, command, ...args].join(
+                ' '
+            )}\n${stderr}`
+        );
+        if (rc != 0) return undefined;
+
         return stdout;
     }
 }

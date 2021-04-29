@@ -85,12 +85,21 @@ async function tryActivate(context: vscode.ExtensionContext) {
 
     const onDidDoveTomlChanged = async (documentUri: Uri) => {
         if (documentUri.fsPath.endsWith('Dove.toml')) {
-            log.debug('Dove.toml change recorded');
             const folder = workspace.getWorkspaceFolder(documentUri);
-            if (
-                folder !== undefined &&
-                documentUri === Uri.joinPath(folder.uri, 'Dove.toml')
-            ) {
+            if (folder === undefined) return;
+            log.debug(`Dove.toml change recorded for "${folder.uri.fsPath}"`);
+
+            // validate Dove.toml, and show notification if invalid
+            const doveExecutable = (await bootstrap(context, state)).doveExecutablePath;
+            const dove = new Dove(doveExecutable);
+            const metadata = await dove.metadata(folder);
+            if (!metadata) {
+                // invalid Dove.toml
+                vscode.window.showErrorMessage('Dove.toml is invalid');
+                return;
+            }
+
+            if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
                 commands.executeCommand('move.reload');
             }
         }
@@ -112,8 +121,8 @@ async function tryActivate(context: vscode.ExtensionContext) {
                 await onDidDoveTomlChanged(file);
             }
         }),
-        workspace.onDidChangeTextDocument(async (e) => {
-            await onDidDoveTomlChanged(e.document.uri);
+        workspace.onDidSaveTextDocument(async (document) => {
+            await onDidDoveTomlChanged(document.uri);
         })
     );
 }
