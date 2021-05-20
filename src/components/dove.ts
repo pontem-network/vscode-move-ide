@@ -3,7 +3,7 @@ import { log } from './util';
 import { spawn } from 'child_process';
 import { MoveLanguageServerInitOpts } from './client';
 
-type MoveDialect = 'dfinance' | 'libra' | 'polkadot';
+type MoveDialect = 'diem' | 'dfinance' | 'pont';
 
 interface LayoutInfo {
     module_dir: string;

@@ -11,7 +11,7 @@ import { ExtensionSettings } from './settings';
 import { log } from './util';
 
 export interface MoveLanguageServerInitOpts {
-    dialect: 'polkadot' | 'libra' | 'dfinance';
+    dialect: 'pont' | 'diem' | 'dfinance';
     modules_folders: string[];
     stdlib_folder: string | undefined | null;
     sender_address: string | undefined | null;
@@ -32,9 +32,8 @@ export function createLanguageServerClient(
         debug: serverExecutable,
     };
     if (ExtensionSettings.logTrace) {
-        log.debug(
-            `Starting language server with configuration: ${JSON.stringify(serverInitOpts)}`
-        );
+        log.debug(`Starting language server: ${languageServerPath}`);
+        log.debug(`With configuration: ${JSON.stringify(serverInitOpts)}`);
     }
     const clientOptions: lc.LanguageClientOptions = {
         documentSelector: [

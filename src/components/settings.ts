@@ -32,19 +32,19 @@ export class ExtensionSettings {
         return this.get('trace.extension');
     }
 
-    static get autocomplete(): boolean {
-        return this.get('autocomplete');
-    }
+    // static get autocomplete(): boolean {
+    //     return this.get('autocomplete');
+    // }
 
-    static get blockchainDialect(): any {
-        return this.get('project.blockchain');
-    }
+    // static get blockchainDialect(): any {
+    //     return this.get('project.blockchain');
+    // }
 
-    static get modulePaths(): string[] {
-        return this.get('project.modulePaths');
-    }
+    // static get modulePaths(): string[] {
+    //     return this.get('project.modulePaths');
+    // }
 
-    static get accountAddress(): string {
-        return this.get('project.account_address');
-    }
+    // static get accountAddress(): string {
+    //     return this.get('project.account_address');
+    // }
 }
