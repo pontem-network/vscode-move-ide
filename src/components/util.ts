@@ -32,7 +32,6 @@ export const log = new (class {
     }
 
     warn(...msg: [unknown, ...unknown[]]): void {
-        debugger;
         log.write('WARN', ...msg);
     }
 

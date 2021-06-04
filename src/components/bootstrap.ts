@@ -6,12 +6,12 @@ import { ExtensionSettings } from './settings';
 import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
 
-const RELEASE_TAG = '1.1.4';
+const RELEASE_TAG = '1.2.0';
 
 function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     if (name === 'win32') return 'win';
     if (name == 'linux') return 'linux';
-    if (name == 'darwin') return 'mac';
+    if (name == 'darwin') return 'darwin';
     return undefined;
 }
 

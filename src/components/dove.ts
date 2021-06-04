@@ -3,14 +3,16 @@ import { log } from './util';
 import { spawn } from 'child_process';
 import { MoveLanguageServerInitOpts } from './client';
 
-type MoveDialect = 'diem' | 'dfinance' | 'pont';
+export type MoveDialect = 'diem' | 'dfinance' | 'pont';
 
 interface LayoutInfo {
     module_dir: string;
     script_dir: string;
     tests_dir: string;
     module_output: string;
+    packages_output: string;
     script_output: string;
+    transaction_output: string;
     target_deps: string;
     target: string;
     index: string;
@@ -20,9 +22,9 @@ interface PackageInfo {
     name: string;
     account_address: string;
     authors: string[];
+    blockchain_api: string | null;
     local_dependencies: string[];
     git_dependencies: string[];
-    blockchain_api: string | null;
     dialect: MoveDialect;
 }
 
@@ -36,7 +38,7 @@ export function getServerInitOptsFromMetadata(metadata: Metadata): MoveLanguageS
     for (const local_dep of metadata.package.local_dependencies) {
         module_folders.push(local_dep);
     }
-    // module_folders.push(metadata.layout.module_dir);
+    module_folders.push(metadata.layout.module_dir);
 
     return {
         dialect: metadata.package.dialect,

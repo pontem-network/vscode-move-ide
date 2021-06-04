@@ -9,9 +9,10 @@ import * as vscode from 'vscode';
 import { Uri, window } from 'vscode';
 import { ExtensionSettings } from './settings';
 import { log } from './util';
+import { MoveDialect } from './dove';
 
 export interface MoveLanguageServerInitOpts {
-    dialect: 'pont' | 'diem' | 'dfinance';
+    dialect: MoveDialect;
     modules_folders: string[];
     stdlib_folder: string | undefined | null;
     sender_address: string | undefined | null;
