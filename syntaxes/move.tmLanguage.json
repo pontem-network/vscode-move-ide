@@ -505,12 +505,17 @@
                 {
                     "comment": "16-byte (or shorter) hex address in Libra",
                     "match": "\\b(0x[A-Fa-f0-9][A-Fa-f0-9]{,31})\\b",
-                    "name": "support.constant.libra.address.move"
+                    "name": "support.constant.diem.address.move"
                 },
                 {
                     "comment": "Bech32 with wallet1 prefix",
                     "match": "\\b(wallet1\\w{38})",
                     "name": "support.constant.dfinance.address.move"
+                },
+                {
+                    "comment": "Polkadot address",
+                    "match": "\\b[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*\\b",
+                    "name": "support.constant.pontem.address.move"
                 }
             ]
         },
