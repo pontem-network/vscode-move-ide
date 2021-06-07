@@ -1,7 +1,12 @@
 import * as Parser from 'web-tree-sitter';
 import { getScopeAt, Location } from './scope';
 import { MoveModule, MoveFile } from './parser';
-import { CompletionItem, CompletionItemKind, TextDocument, Position } from 'vscode-languageserver';
+import {
+    CompletionItem,
+    CompletionItemKind,
+    TextDocument,
+    Position,
+} from 'vscode-languageserver';
 
 export function suggestCompletion(
     parser: Parser,
@@ -82,7 +87,11 @@ export function suggestCompletion(
             // Unfortunately tree sitter needs a lot of improvements
             const letStatementPos = line.indexOf('let');
 
-            if (letStatementPos > 0 && line.includes(':') && line.indexOf(':') > letStatementPos) {
+            if (
+                letStatementPos > 0 &&
+                line.includes(':') &&
+                line.indexOf(':') > letStatementPos
+            ) {
                 return getPrimitiveTypes();
             }
 
@@ -164,13 +173,15 @@ function getPrimitiveTypes(): CompletionItem[] {
         {
             label: 'address',
             kind: CompletionItemKind.TypeParameter,
-            detail: 'Address type, 16-byte HEX for Libra and "wallet"-prefixed bech32 for dfinance',
+            detail:
+                'Address type, 16-byte HEX for Libra and "wallet"-prefixed bech32 for dfinance',
         },
         {
             label: 'signer',
             insertText: '&signer',
             kind: CompletionItemKind.TypeParameter,
-            detail: 'Representation of sender authority, can be used to move and access resources',
+            detail:
+                'Representation of sender authority, can be used to move and access resources',
         },
     ];
 }

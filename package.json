@@ -1,7 +1,7 @@
 {
     "name": "move-language",
-    "version": "0.4.8",
-    "description": "Move/mvir IDE for VSCode",
+    "version": "0.5.0",
+    "description": "Move IDE for VSCode",
     "publisher": "PontemNetwork",
     "displayName": "Move Language",
     "categories": [
@@ -14,17 +14,70 @@
         "tree-sitter": "tree-sitter build-wasm ./node_modules/@movei/tree-sitter-move",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "prettier": "prettier --write src/ package.json"
+    },
+    "dependencies": {
+        "node-fetch": "^2.6.1",
+        "npm": "^7.8.0",
+        "vscode-languageclient": "^7.0.0",
+        "vscode-languageserver": "^7.0.0",
+        "vscode-languageserver-protocol": "^3.16.0",
+        "vscode-languageserver-textdocument": "^1.0.1",
+        "vscode-languageserver-types": "^3.16.0",
+        "web-tree-sitter": "^0.16.4"
+    },
+    "devDependencies": {
+        "@movei/tree-sitter-move": "github:move-hub/tree-sitter-move",
+        "@types/node": "^14.14.0",
+        "@types/node-fetch": "^2.5.9",
+        "@types/vscode": "^1.56.0",
+        "husky": "^6.0.0",
+        "prettier": "2.3.0",
+        "pretty-quick": "^3.1.0",
+        "tree-sitter-cli": "^0.16.9",
+        "typescript": "^4.3.2"
     },
     "engines": {
-        "vscode": "^1.43.0"
+        "vscode": "^1.56.0"
     },
     "activationEvents": [
-        "onLanguage:mvir",
-        "onLanguage:move"
+        "onLanguage:move",
+        "workspaceContains:**/Dove.toml"
     ],
     "main": "./dist/extension.js",
     "contributes": {
+        "taskDefinitions": [
+            {
+                "type": "dove",
+                "properties": {
+                    "subcommand": {
+                        "type": "string"
+                    },
+                    "args": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "subcommand"
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "command": "move.reload",
+                "title": "Reload move-language-server",
+                "category": "Move"
+            },
+            {
+                "command": "move.doveInit",
+                "title": "Initialize Dove project",
+                "category": "Move"
+            }
+        ],
         "languages": [
             {
                 "id": "move",
@@ -39,18 +92,6 @@
                     ".move"
                 ],
                 "configuration": "./language-configuration.json"
-            },
-            {
-                "id": "mvir",
-                "aliases": [
-                    "MVIR",
-                    "mvir",
-                    "Move IR"
-                ],
-                "extensions": [
-                    ".mvir"
-                ],
-                "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
@@ -58,85 +99,41 @@
                 "language": "move",
                 "scopeName": "source.move",
                 "path": "./syntaxes/move.tmLanguage.json"
-            },
-            {
-                "language": "mvir",
-                "scopeName": "source.mvir",
-                "path": "./syntaxes/mvir.tmLanguage.json"
             }
         ],
-        "commands": [
-            {
-                "command": "move.compile",
-                "when": "resourceLangId == move",
-                "title": "Move: Compile"
-            },
-            {
-                "command": "move.run",
-                "when": "resourceLangId == move",
-                "title": "Move: Run Script"
-            }
-        ],
-        "menus": {
-            "commandPalette": [
-                {
-                    "command": "move.compile",
-                    "when": "editorLangId == move"
-                },
-                {
-                    "command": "move.run",
-                    "when": "editorLangId == move"
-                }
-            ]
-        },
         "configuration": {
             "title": "Move Language",
             "properties": {
-                "move.autocomplete": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable autocompletion feature"
-                },
-                "move.configPath": {
-                    "type": "string",
-                    "default": ".mvconfig.json",
-                    "description": "When set and file is present, json configuration will be used instead of editor config"
-                },
-                "move.blockchain": {
-                    "type": "string",
-                    "enum": [
-                        "libra",
-                        "dfinance",
-                        "diem"
-                    ],
-                    "default": "Diem",
-                    "description": "Move compiler and dialect to use: Dfinance or Diem",
-                    "scope": "resource"
-                },
-                "move.compilerDir": {
-                    "type": "string",
-                    "default": "./out",
-                    "description": "Relative path inside working directory to put compiled files into"
-                },
-                "move.account": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Default account to use when compiling. If not set prompt will be shown on compile command"
-                },
-                "move.showModal": {
-                    "type": "boolean",
-                    "description": "Show notifications in modal window",
-                    "default": true
-                },
                 "move.languageServerPath": {
                     "type": "string",
                     "default": "",
-                    "description": "Custom path to Move Language Server binary"
+                    "description": "Custom path to Move Language Server executable"
                 },
-                "move.moveExecutorPath": {
+                "move.doveExecutablePath": {
                     "type": "string",
                     "default": "",
-                    "description": "Custom path to Move Executor binary"
+                    "description": "Custom path to Dove executable"
+                },
+                "move.trace.extension": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable logging of VS Code extension itself"
+                },
+                "move.trace.server": {
+                    "type": "string",
+                    "scope": "window",
+                    "enum": [
+                        "off",
+                        "messages",
+                        "verbose"
+                    ],
+                    "enumDescriptions": [
+                        "No traces",
+                        "Error only",
+                        "Full log"
+                    ],
+                    "default": "off",
+                    "description": "Trace requests to the move-language-server (this is usually overly verbose and not recommended for regular users)."
                 }
             }
         }
@@ -170,58 +167,9 @@
         "url": "https://github.com/pontem-network/vscode-move-ide/issues"
     },
     "homepage": "https://github.com/pontem-network/vscode-move-ide/tree/release-0.4#readme",
-    "devDependencies": {
-        "@movei/tree-sitter-move": "github:move-hub/tree-sitter-move",
-        "@types/node": "^14.0.1",
-        "@types/vscode": "^1.43.0",
-        "husky": "^6.0.0",
-        "prettier": "2.2.1",
-        "pretty-quick": "^3.1.0",
-        "tree-sitter-cli": "^0.16.9",
-        "typescript": "^3.8.3"
-    },
     "__metadata": {
         "id": "7a08f3ad-eba4-44de-bca1-e41d38b68a5c",
         "publisherDisplayName": "Damir Shamanaev",
         "publisherId": "a21ee11b-2c64-42b1-a3d1-78e5ee8191a6"
-    },
-    "dependencies": {
-        "npm": "^7.8.0",
-        "vscode-languageclient": "^6.1.3",
-        "vscode-languageserver": "^6.1.1",
-        "vscode-languageserver-textdocument": "^1.0.1",
-        "web-tree-sitter": "^0.16.4"
-    },
-    "husky": {
-        "hooks": {
-            "pre-commit": "pretty-quick --staged"
-        }
-    },
-    "move-ls": {
-        "version": "0.9.8",
-        "repository": "dfinance/move-tools",
-        "binaries": {
-            "win32": "move-language-server-win32.exe",
-            "linux": "move-language-server-linux",
-            "darwin": "move-language-server-darwin"
-        }
-    },
-    "move-executor": {
-        "version": "0.9.8",
-        "repository": "dfinance/move-tools",
-        "binaries": {
-            "win32": "move-executor-win32.exe",
-            "linux": "move-executor-linux",
-            "darwin": "move-executor-darwin"
-        }
-    },
-    "move-build": {
-        "version": "15.09.20",
-        "repository": "dfinance/libra",
-        "binaries": {
-            "win32": null,
-            "linux": "movec-15.09.20-linux",
-            "darwin": "movec-15.09.20-darwin"
-        }
     }
 }

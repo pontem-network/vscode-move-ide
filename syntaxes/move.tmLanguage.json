@@ -1,7 +1,6 @@
 {
     "scopeName": "source.move",
     "repository": {
-
         "line-comments": {
             "comment": "Single-line comment",
             "name": "comment.line.double-slash.move",
@@ -28,10 +27,7 @@
         },
 
         "comments": {
-            "patterns": [
-                { "include": "#line-comments" },
-                { "include": "#block-comments" }
-            ]
+            "patterns": [{ "include": "#line-comments" }, { "include": "#block-comments" }]
         },
 
         "script": {
@@ -70,10 +66,7 @@
                     "comment": "Address literal",
                     "begin": "(?<=address)",
                     "end": "(?={)",
-                    "patterns": [
-                        { "include": "#comments" },
-                        { "include": "#address_literal" }
-                    ]
+                    "patterns": [{ "include": "#comments" }, { "include": "#address_literal" }]
                 },
                 { "include": "#module" }
             ]
@@ -94,9 +87,7 @@
                     "begin": "(?<=module)",
                     "end": "(?={)",
                     "name": "entity.name.type.move",
-                    "patterns": [
-                        { "include": "#comments" }
-                    ]
+                    "patterns": [{ "include": "#comments" }]
                 },
                 {
                     "comment": "Module scope",
@@ -105,9 +96,11 @@
                     "patterns": [
                         { "include": "#comments" },
                         { "include": "#import" },
+                        { "include": "#friend" },
                         { "include": "#const" },
                         { "include": "#resource" },
                         { "include": "#struct" },
+                        { "include": "#resource" },
                         { "include": "#public_fun" },
                         { "include": "#native_fun" },
                         { "include": "#fun" },
@@ -115,6 +108,24 @@
 
                         { "include": "#block" }
                     ]
+                }
+            ]
+        },
+
+        "friend": {
+            "name": "meta.friend.move",
+            "begin": "\\b(friend)\\b",
+            "beginCaptures": {
+                "1": { "name": "storage.modifier.type.move" }
+            },
+            "end": ";",
+            "patterns": [
+                { "include": "#comments" },
+                { "include": "#address_literal" },
+                {
+                    "comment": "Friend module name",
+                    "match": "\\b(\\w+)\\b",
+                    "name": "entity.name.type.module.move"
                 }
             ]
         },
@@ -187,6 +198,16 @@
                     "patterns": [
                         { "include": "#comments" },
                         {
+                            "comment": "`has` keyword",
+                            "match": "\\b(has)\\b",
+                            "name": "keyword.has.control.move"
+                        },
+                        {
+                            "comment": "Ability",
+                            "match": "\\b(store|key|drop|copy)\\b",
+                            "name": "entity.name.type.ability.move"
+                        },
+                        {
                             "comment": "Struct name",
                             "match": "\\b(\\w+)\\b",
                             "name": "entity.name.type.move"
@@ -216,9 +237,7 @@
                 "1": { "name": "storage.modifier.type.move" }
             },
             "end": "(?<=})",
-            "patterns": [
-                { "include": "#struct" }
-            ]
+            "patterns": [{ "include": "#struct" }]
         },
 
         "native_fun": {
@@ -248,15 +267,25 @@
             "end": "(?<=})",
             "patterns": [
                 { "include": "#comments" },
+                {
+                    "comment": "Function visibility",
+                    "begin": "\\(",
+                    "end": "\\)",
+                    "patterns": [
+                        { "include": "#comments" },
+                        {
+                            "comment": "Visibility modifier",
+                            "match": "\\b(script|friend)\\b",
+                            "name": "storage.modifier.public.script.move"
+                        }
+                    ]
+                },
                 { "include": "#fun" }
             ]
         },
 
         "fun": {
-            "patterns": [
-                { "include": "#fun_signature" },
-                { "include": "#fun_body" }
-            ]
+            "patterns": [{ "include": "#fun_signature" }, { "include": "#fun_body" }]
         },
 
         "fun_signature": {
@@ -312,7 +341,7 @@
                 { "include": "#module_access" },
                 {
                     "comment": "Trait-like condition",
-                    "match": "\\b(resource|copyable)\\b",
+                    "match": "\\b(store|drop|key|copy)\\b",
                     "name": "entity.name.type.kind.move"
                 }
             ]
@@ -339,7 +368,6 @@
                 { "include": "#fun_call" },
 
                 { "include": "#block" }
-
             ]
         },
 
@@ -454,10 +482,7 @@
 
         "types": {
             "comment": "Built-in types + vector",
-            "patterns": [
-                { "include": "#primitives" },
-                { "include": "#vector" }
-            ]
+            "patterns": [{ "include": "#primitives" }, { "include": "#vector" }]
         },
 
         "vector": {
@@ -466,10 +491,7 @@
                 "1": { "name": "support.type.vector.move" }
             },
             "end": ">",
-            "patterns": [
-                { "include": "#primitives" },
-                { "include": "#vector" }
-            ]
+            "patterns": [{ "include": "#primitives" }, { "include": "#vector" }]
         },
 
         "primitives": {
@@ -483,12 +505,17 @@
                 {
                     "comment": "16-byte (or shorter) hex address in Libra",
                     "match": "\\b(0x[A-Fa-f0-9][A-Fa-f0-9]{,31})\\b",
-                    "name": "support.constant.libra.address.move"
+                    "name": "support.constant.diem.address.move"
                 },
                 {
                     "comment": "Bech32 with wallet1 prefix",
                     "match": "\\b(wallet1\\w{38})",
                     "name": "support.constant.dfinance.address.move"
+                },
+                {
+                    "comment": "Polkadot address",
+                    "match": "\\b[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*\\b",
+                    "name": "support.constant.pontem.address.move"
                 }
             ]
         },
@@ -516,7 +543,7 @@
                     "comment": "ASCII Bytestring literal",
                     "match": "\\b(\"(.*)\")",
                     "captures": {
-                        "1": { "name": "string.quoted.double.raw.byte.move"}
+                        "1": { "name": "string.quoted.double.raw.byte.move" }
                     }
                 },
                 {
@@ -548,7 +575,6 @@
                 { "include": "#control" },
                 { "include": "#types" },
                 { "include": "#let" }
-
             ]
         },
 

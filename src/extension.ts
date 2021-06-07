@@ -1,95 +1,133 @@
-import * as fs from 'fs';
-import * as cp from 'child_process';
-import * as path from 'path';
+import * as vscode from 'vscode';
+import { commands, Uri, window, workspace } from 'vscode';
+import { PersistentState } from './components/persistent_state';
+import { log } from './components/util';
+import { ClientWorkspaceFactory } from './components/ws';
+import { ExtensionSettings } from './components/settings';
+import { Dove } from './components/dove';
+import { bootstrap } from './components/bootstrap';
 
-import { extensions, ExtensionContext, commands, workspace, TextDocument } from 'vscode';
+export const EXTENSION_SETTINGS_ROOT_SECTION = 'move';
 
-import { compileCommand } from './commands/compile';
-import { runScriptCommand } from './commands/run.script';
+export async function activate(context: vscode.ExtensionContext) {
+    // VS Code doesn't show a notification when an extension fails to activate
+    // so we do it ourselves.
+    await tryActivate(context).catch((err) => {
+        vscode.window.showErrorMessage(`Cannot activate vscode-move-ide: ${err.message}`);
+        throw err;
+    });
+}
 
-import { downloadBinaries } from './components/downloader';
-
-import {
-    didOpenTextDocument as autocompleteDidOpenTextDocument,
-    workspaceClients as autocompleteWorkspaceClients,
-} from './components/autocomplete';
-
-import {
-    didOpenTextDocument as mlsDidOpenTextDocument,
-    workspaceClients as mlsWorkspaceClients,
-} from './components/mls';
-
-// @ts-ignore
-export const EXTENSION_PATH = extensions.getExtension('PontemNetwork.move-language').extensionPath;
-
-/**
+/*
  * Activate extension: register commands, attach handlers
- * @param {vscode.ExtensionContext} context
  */
-export async function activate(context: ExtensionContext) {
-    // Somewhy on Win32 process.platform is detected incorrectly when run from
-    // npm postinstall script. So on Win32, on activate event, extension will
-    // check whether /bin has .exe files; if there are - action skipped; and if
-    // not - then download-binaries script is run again;
-    // I hope there is a better fix for this or proper way to do it. :confused:
-    const files = fs.readdirSync(path.join(context.extensionPath, 'bin'));
-    if (files.length < 3) {
-        console.log('No binaries found, downloading...');
-        await downloadBinaries(context.extensionPath);
-    }
+async function tryActivate(context: vscode.ExtensionContext) {
+    log.setEnabled(ExtensionSettings.logTrace);
+    log.debug('Activating the extension...');
 
+    const state = new PersistentState(context.globalState);
+
+    // const [languageServerPath, doveExecutablePath] = await bootstrap(context, state);
+    const clientWorkspaceFactory = new ClientWorkspaceFactory(context, state);
+    context.subscriptions.push(clientWorkspaceFactory);
     context.subscriptions.push(
-        commands.registerCommand('move.compile', () => compileCommand().catch(console.error)),
-        commands.registerCommand('move.run', () => runScriptCommand().catch(console.error))
+        window.onDidChangeActiveTextEditor(async (editor) => {
+            await clientWorkspaceFactory.initClientWorkspace(editor);
+        })
+    );
+    // Manually trigger the first event to start up server instance if necessary,
+    // since VSCode doesn't do that on startup by itself.
+    await clientWorkspaceFactory.initClientWorkspace(window.activeTextEditor);
+
+    // const registerCommand = (command: string, callback: (...args: any[]) => any) => {
+    //     log.debug(`Re`)
+    //     commands.registerCommand(command, callback)
+    // }
+    // Reloading is inspired by @DanTup maneuver: https://github.com/microsoft/vscode/issues/45774#issuecomment-373423895
+    log.debug('Register command "move.reload"');
+    context.subscriptions.push(
+        commands.registerCommand('move.reload', () => {
+            log.debug('"move.reload" called');
+            void vscode.window.showInformationMessage('Reloading Move IDE...');
+
+            deactivate();
+            while (context.subscriptions.length > 0) {
+                try {
+                    // unregisters command
+                    context.subscriptions.pop()!.dispose();
+                } catch (err) {
+                    log.error('Dispose error:', err);
+                }
+            }
+            activate(context).catch(log.error);
+        })
     );
 
-    // Add Move languageServer
-    workspace.onDidOpenTextDocument(mlsDidOpenTextDocument);
-    workspace.textDocuments.forEach(mlsDidOpenTextDocument);
-    workspace.onDidChangeWorkspaceFolders((event) => {
-        for (const folder of event.removed) {
-            const client = mlsWorkspaceClients.get(folder);
-            if (client) {
-                mlsWorkspaceClients.delete(folder);
-                client.stop();
-            }
-        }
-    });
+    log.debug('Register command "move.doveInit"');
+    context.subscriptions.push(
+        commands.registerCommand('move.doveInit', async () => {
+            log.debug('"move.doveInit" called');
+            void vscode.window.showInformationMessage('Initializing current project...');
 
-    // Do the same for autocompletion server
-    workspace.onDidOpenTextDocument(autocompleteDidOpenTextDocument);
-    workspace.textDocuments.forEach(autocompleteDidOpenTextDocument);
-    workspace.onDidChangeWorkspaceFolders((event) => {
-        for (const folder of event.removed) {
-            const client = autocompleteWorkspaceClients.get(folder);
-            if (client) {
-                autocompleteWorkspaceClients.delete(folder);
-                client.stop();
+            const editor = window.activeTextEditor;
+            if (!editor || !editor.document) return;
+            const folder = workspace.getWorkspaceFolder(editor.document.uri);
+            if (!folder) return;
+
+            const execs = await bootstrap(context, state);
+            const dove = new Dove(execs.doveExecutablePath);
+            await dove.init(folder);
+            commands.executeCommand('move.reload');
+
+            await clientWorkspaceFactory.initClientWorkspace(editor);
+        })
+    );
+
+    const onDidDoveTomlChanged = async (documentUri: Uri) => {
+        if (documentUri.fsPath.endsWith('Dove.toml')) {
+            const folder = workspace.getWorkspaceFolder(documentUri);
+            if (folder === undefined) return;
+            log.debug(`Dove.toml change recorded for "${folder.uri.fsPath}"`);
+
+            // validate Dove.toml, and show notification if invalid
+            const doveExecutable = (await bootstrap(context, state)).doveExecutablePath;
+            const dove = new Dove(doveExecutable);
+            const metadata = await dove.metadata(folder);
+            if (!metadata) {
+                // invalid Dove.toml
+                vscode.window.showErrorMessage('Dove.toml is invalid');
+                return;
+            }
+
+            if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
+                commands.executeCommand('move.reload');
             }
         }
-    });
+    };
+    context.subscriptions.push(
+        workspace.onDidChangeConfiguration(async (e) => {
+            if (e.affectsConfiguration(EXTENSION_SETTINGS_ROOT_SECTION)) {
+                log.debug('move section in settings.json changed');
+                commands.executeCommand('move.reload');
+            }
+        }),
+        workspace.onDidCreateFiles(async (e) => {
+            for (const file of e.files) {
+                await onDidDoveTomlChanged(file);
+            }
+        }),
+        workspace.onDidDeleteFiles(async (e) => {
+            for (const file of e.files) {
+                await onDidDoveTomlChanged(file);
+            }
+        }),
+        workspace.onDidSaveTextDocument(async (document) => {
+            await onDidDoveTomlChanged(document.uri);
+        })
+    );
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
-    return Promise.all([
-        Array.from(mlsWorkspaceClients.entries())
-            .map(([, client]) => client.stop())
-            .reduce((chain, prom) => chain.then(() => prom), Promise.resolve()),
-
-        Array.from(autocompleteWorkspaceClients.entries())
-            .map(([, client]) => client.stop())
-            .reduce((chain, prom) => chain.then(() => prom), Promise.resolve()),
-    ]);
-}
-
-export function checkDocumentLanguage(document: TextDocument, languageId: string) {
-    if (
-        document.languageId !== languageId ||
-        (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')
-    ) {
-        return false;
-    }
-
-    return true;
+export async function deactivate() {
+    log.debug('Deactivating the extension...');
 }
