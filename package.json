@@ -71,11 +71,6 @@
                 "command": "move.reload",
                 "title": "Reload move-language-server",
                 "category": "Move"
-            },
-            {
-                "command": "move.doveInit",
-                "title": "Initialize Dove project",
-                "category": "Move"
             }
         ],
         "languages": [

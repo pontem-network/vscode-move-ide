@@ -32,12 +32,19 @@ async function tryActivate(context: vscode.ExtensionContext) {
     context.subscriptions.push(clientWorkspaceFactory);
     context.subscriptions.push(
         window.onDidChangeActiveTextEditor(async (editor) => {
-            await clientWorkspaceFactory.initClientWorkspace(editor);
+            await clientWorkspaceFactory.initClientWorkspace(editor?.document);
+        })
+    );
+    context.subscriptions.push(
+        workspace.onDidSaveTextDocument(async (text_document) => {
+            if (text_document.uri.fsPath.endsWith('Dove.toml')) {
+                await clientWorkspaceFactory.initClientWorkspace(text_document);
+            }
         })
     );
     // Manually trigger the first event to start up server instance if necessary,
     // since VSCode doesn't do that on startup by itself.
-    await clientWorkspaceFactory.initClientWorkspace(window.activeTextEditor);
+    await clientWorkspaceFactory.initClientWorkspace(window.activeTextEditor?.document);
 
     // const registerCommand = (command: string, callback: (...args: any[]) => any) => {
     //     log.debug(`Re`)
@@ -63,25 +70,25 @@ async function tryActivate(context: vscode.ExtensionContext) {
         })
     );
 
-    log.debug('Register command "move.doveInit"');
-    context.subscriptions.push(
-        commands.registerCommand('move.doveInit', async () => {
-            log.debug('"move.doveInit" called');
-            void vscode.window.showInformationMessage('Initializing current project...');
-
-            const editor = window.activeTextEditor;
-            if (!editor || !editor.document) return;
-            const folder = workspace.getWorkspaceFolder(editor.document.uri);
-            if (!folder) return;
-
-            const execs = await bootstrap(context, state);
-            const dove = new Dove(execs.doveExecutablePath);
-            await dove.init(folder);
-            commands.executeCommand('move.reload');
-
-            await clientWorkspaceFactory.initClientWorkspace(editor);
-        })
-    );
+    // log.debug('Register command "move.doveInit"');
+    // context.subscriptions.push(
+    //     commands.registerCommand('move.doveInit', async () => {
+    //         log.debug('"move.doveInit" called');
+    //         void vscode.window.showInformationMessage('Initializing current project...');
+    //
+    //         const editor = window.activeTextEditor;
+    //         if (!editor || !editor.document) return;
+    //         const folder = workspace.getWorkspaceFolder(editor.document.uri);
+    //         if (!folder) return;
+    //
+    //         const execs = await bootstrap(context, state);
+    //         const dove = new Dove(execs.doveExecutablePath);
+    //         await dove.init(folder);
+    //         commands.executeCommand('move.reload');
+    //
+    //         await clientWorkspaceFactory.initClientWorkspace(editor);
+    //     })
+    // );
 
     const onDidDoveTomlChanged = async (documentUri: Uri) => {
         if (documentUri.fsPath.endsWith('Dove.toml')) {
@@ -92,10 +99,11 @@ async function tryActivate(context: vscode.ExtensionContext) {
             // validate Dove.toml, and show notification if invalid
             const doveExecutable = (await bootstrap(context, state)).doveExecutablePath;
             const dove = new Dove(doveExecutable);
-            const metadata = await dove.metadata(folder);
+
+            const [metadata, errors] = await dove.metadata(folder);
             if (!metadata) {
                 // invalid Dove.toml
-                vscode.window.showErrorMessage('Dove.toml is invalid');
+                vscode.window.showErrorMessage(`Dove.toml is invalid: ${errors}`);
                 return;
             }
 
@@ -121,6 +129,12 @@ async function tryActivate(context: vscode.ExtensionContext) {
                 await onDidDoveTomlChanged(file);
             }
         }),
+        // vscode.window.on(async (editor) => {
+        //     let document_uri = editor?.document?.uri
+        //     if (document_uri) {
+        //         await onDidDoveTomlChanged(document_uri)
+        //     }
+        // }),
         workspace.onDidSaveTextDocument(async (document) => {
             await onDidDoveTomlChanged(document.uri);
         })

@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
-import { Disposable, Uri, workspace } from 'vscode';
+import { Disposable, TextDocument, Uri, workspace } from 'vscode';
 import * as lc from 'vscode-languageclient/node';
 import { Dove, getServerInitOptsFromMetadata } from './dove';
-import { createAutocompleteServerClient, createLanguageServerClient } from './client';
-import { isMoveEditor, log, uriExists } from './util';
+import { createLanguageServerClient } from './client';
+import { isMoveDocument, log, uriExists } from './util';
 import { activateTaskProvider } from './tasks';
-import { ExtensionSettings } from './settings';
 import { bootstrap } from './bootstrap';
 import { PersistentState } from './persistent_state';
 
@@ -32,10 +31,10 @@ export class ClientWorkspaceFactory implements Disposable {
         private readonly state: PersistentState
     ) {}
 
-    async initClientWorkspace(editor: vscode.TextEditor | undefined) {
-        if (!editor || !editor.document) return;
+    async initClientWorkspace(text_document: TextDocument | undefined) {
+        if (!text_document) return;
 
-        const folder = workspace.getWorkspaceFolder(editor.document.uri);
+        const folder = workspace.getWorkspaceFolder(text_document.uri);
         if (!folder) return;
 
         if (!(await isDoveInitializedProject(folder))) {
@@ -57,7 +56,7 @@ export class ClientWorkspaceFactory implements Disposable {
 
         log.debug(`initClientWorkspace called inside ${folder.uri.fsPath}`);
         let ws = this.workspaces.get(folder);
-        if (!ws && isMoveEditor(editor)) {
+        if (!ws && isMoveDocument(text_document)) {
             ws = new ClientWorkspace(
                 folder,
                 this.extensionContext,
@@ -66,6 +65,8 @@ export class ClientWorkspaceFactory implements Disposable {
             this.workspaces.set(folder, ws);
 
             const dove = new Dove(this.doveExecutable);
+            const metadata = await dove.metadata(folder);
+            if (!metadata) return;
             // let dove: Dove | undefined = undefined;
             // if (await isDoveInitializedProject(folder)) {
             //     dove = new Dove(this.doveExecutable, ExtensionSettings.logTrace);
@@ -98,8 +99,9 @@ export class ClientWorkspace {
     async start(dove: Dove) {
         log.debug(`Starting new ClientWorkspace instance at ${this.folder.uri.toString()}`);
 
-        const metadata = await dove.metadata(this.folder);
+        const metadata = await dove.metadataWithErrorMessage(this.folder);
         if (!metadata) return;
+        // if (!metadata) return;
 
         // if (dove !== undefined) {
         // } else {

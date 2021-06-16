@@ -53,17 +53,28 @@ export class Dove {
         log.debug(`Create Dove object with executable ${executable}`);
     }
 
-    async metadata(folder: vscode.WorkspaceFolder): Promise<Metadata | undefined> {
-        let metadata_json = await this.runCommand('metadata', [], folder.uri.fsPath);
+    async metadata(folder: vscode.WorkspaceFolder): Promise<[Metadata | undefined, string]> {
+        let [metadata_json, errors] = await this.runCommand('metadata', [], folder.uri.fsPath);
         if (!metadata_json) {
             log.debug(`"dove metadata" failed at ${folder.uri.fsPath}`);
-            return undefined;
+            return [undefined, errors];
         }
 
         metadata_json = metadata_json.trim();
         log.debug(`Fetched project metadata ${metadata_json}`);
 
-        return JSON.parse(metadata_json);
+        return [JSON.parse(metadata_json), errors];
+    }
+
+    async metadataWithErrorMessage(
+        folder: vscode.WorkspaceFolder
+    ): Promise<Metadata | undefined> {
+        let [metadata, errors] = await this.metadata(folder);
+        if (!metadata) {
+            vscode.window.showErrorMessage(`Dove.toml is invalid: ${errors}`);
+            return undefined;
+        }
+        return metadata;
     }
 
     async init(folder: vscode.WorkspaceFolder): Promise<void> {
@@ -74,12 +85,12 @@ export class Dove {
         command: string,
         args: string[],
         cwd: string
-    ): Promise<string | undefined> {
+    ): Promise<[string, string]> {
         log.debug(`Running dove command ${JSON.stringify([command, ...args])}`);
 
         let stdout = '';
         let stderr = '';
-        const rc = await new Promise((resolve) => {
+        await new Promise((resolve) => {
             const process = spawn(this.executable, [command, ...args], { cwd });
             process.stdout.on('data', (data) => {
                 stdout += data;
@@ -93,13 +104,9 @@ export class Dove {
         });
         log.debug(`finishing stdout: ${stdout}`);
 
-        log.warn(
-            `Error running command: ${[this.executable, command, ...args].join(
-                ' '
-            )}\n${stderr}`
-        );
-        if (rc != 0) return undefined;
+        let fullCommand = [this.executable, command, ...args].join(' ');
+        log.warn(`Error running command: ${fullCommand}\n${stderr}`);
 
-        return stdout;
+        return [stdout, stderr];
     }
 }
