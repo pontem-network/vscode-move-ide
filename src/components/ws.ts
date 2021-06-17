@@ -101,17 +101,6 @@ export class ClientWorkspace {
 
         const metadata = await dove.metadataWithErrorMessage(this.folder);
         if (!metadata) return;
-        // if (!metadata) return;
-
-        // if (dove !== undefined) {
-        // } else {
-        //     serverInitOpts = {
-        //         dialect: ExtensionSettings.blockchainDialect,
-        //         modules_folders: ExtensionSettings.modulePaths,
-        //         sender_address: ExtensionSettings.accountAddress,
-        //         stdlib_folder: null,
-        //     };
-        // }
 
         const serverInitOpts = getServerInitOptsFromMetadata(metadata);
         const client = createLanguageServerClient(
@@ -122,20 +111,7 @@ export class ClientWorkspace {
         this.languageClients.push(client);
         this.disposables.push(client.start());
 
-        // if (ExtensionSettings.autocomplete) {
-        //     const autocompleteClient = createAutocompleteServerClient(
-        //         this.extensionContext.extensionUri,
-        //         this.folder,
-        //         serverInitOpts
-        //     );
-        //     this.languageClients.push(autocompleteClient);
-        //     this.disposables.push(autocompleteClient.start());
-        // }
-
         this.disposables.push(activateTaskProvider(this.folder, dove.executable));
-        // if (dove !== undefined) {
-        //     this.disposables.push(activateTaskProvider(this.folder, dove.executable));
-        // }
     }
 
     async stop(): Promise<any> {

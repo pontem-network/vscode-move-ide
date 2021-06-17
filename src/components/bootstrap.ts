@@ -8,14 +8,6 @@ import { download, downloadWithRetryDialog, fetchRelease } from './net';
 import { AssertionError } from 'assert';
 
 const RELEAGE_TAG = '1.2.2';
-// const DOVE_VERSION = '1.2.2';
-// const LANGUAGE_SERVER_VERSION = '1.2.0';
-
-// function getVersion(binaryName: string): string | undefined {
-//     if (binaryName === 'dove') return DOVE_VERSION;
-//     if (binaryName === 'move-language-server') return LANGUAGE_SERVER_VERSION;
-//     return undefined;
-// }
 
 function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     if (name === 'win32') return 'win';

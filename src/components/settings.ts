@@ -31,20 +31,4 @@ export class ExtensionSettings {
     static get logTrace(): boolean {
         return this.get('trace.extension');
     }
-
-    // static get autocomplete(): boolean {
-    //     return this.get('autocomplete');
-    // }
-
-    // static get blockchainDialect(): any {
-    //     return this.get('project.blockchain');
-    // }
-
-    // static get modulePaths(): string[] {
-    //     return this.get('project.modulePaths');
-    // }
-
-    // static get accountAddress(): string {
-    //     return this.get('project.account_address');
-    // }
 }

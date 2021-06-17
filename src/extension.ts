@@ -46,10 +46,6 @@ async function tryActivate(context: vscode.ExtensionContext) {
     // since VSCode doesn't do that on startup by itself.
     await clientWorkspaceFactory.initClientWorkspace(window.activeTextEditor?.document);
 
-    // const registerCommand = (command: string, callback: (...args: any[]) => any) => {
-    //     log.debug(`Re`)
-    //     commands.registerCommand(command, callback)
-    // }
     // Reloading is inspired by @DanTup maneuver: https://github.com/microsoft/vscode/issues/45774#issuecomment-373423895
     log.debug('Register command "move.reload"');
     context.subscriptions.push(
@@ -70,26 +66,6 @@ async function tryActivate(context: vscode.ExtensionContext) {
         })
     );
 
-    // log.debug('Register command "move.doveInit"');
-    // context.subscriptions.push(
-    //     commands.registerCommand('move.doveInit', async () => {
-    //         log.debug('"move.doveInit" called');
-    //         void vscode.window.showInformationMessage('Initializing current project...');
-    //
-    //         const editor = window.activeTextEditor;
-    //         if (!editor || !editor.document) return;
-    //         const folder = workspace.getWorkspaceFolder(editor.document.uri);
-    //         if (!folder) return;
-    //
-    //         const execs = await bootstrap(context, state);
-    //         const dove = new Dove(execs.doveExecutablePath);
-    //         await dove.init(folder);
-    //         commands.executeCommand('move.reload');
-    //
-    //         await clientWorkspaceFactory.initClientWorkspace(editor);
-    //     })
-    // );
-
     const onDidDoveTomlChanged = async (documentUri: Uri) => {
         if (documentUri.fsPath.endsWith('Dove.toml')) {
             const folder = workspace.getWorkspaceFolder(documentUri);
@@ -107,10 +83,9 @@ async function tryActivate(context: vscode.ExtensionContext) {
                 return;
             }
 
-            commands.executeCommand('move.reload');
-            // if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
-            //     commands.executeCommand('move.reload');
-            // }
+            if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
+                commands.executeCommand('move.reload');
+            }
         }
     };
     context.subscriptions.push(
@@ -130,12 +105,6 @@ async function tryActivate(context: vscode.ExtensionContext) {
                 await onDidDoveTomlChanged(file);
             }
         }),
-        // vscode.window.on(async (editor) => {
-        //     let document_uri = editor?.document?.uri
-        //     if (document_uri) {
-        //         await onDidDoveTomlChanged(document_uri)
-        //     }
-        // }),
         workspace.onDidSaveTextDocument(async (document) => {
             await onDidDoveTomlChanged(document.uri);
         })
