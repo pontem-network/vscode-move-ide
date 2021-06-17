@@ -7,7 +7,7 @@ import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
 import { AssertionError } from 'assert';
 
-const DOVE_RELEASE_TAG = '1.2.1';
+const DOVE_RELEASE_TAG = '1.2.2';
 const LANGUAGE_SERVER_RELEASE_TAG = '1.2.0';
 
 function getReleaseTag(binaryName: string): string | undefined {

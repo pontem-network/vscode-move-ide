@@ -5,16 +5,24 @@ import { MoveLanguageServerInitOpts } from './client';
 
 export type MoveDialect = 'diem' | 'dfinance' | 'pont';
 
+interface GitDependency {
+    git: string;
+    branch: string | undefined;
+    rev: string | undefined;
+    tag: string | undefined;
+    path: string | undefined;
+    local_paths: string[];
+}
+
 interface LayoutInfo {
-    module_dir: string;
-    script_dir: string;
+    modules_dir: string;
+    scripts_dir: string;
     tests_dir: string;
-    module_output: string;
-    packages_output: string;
-    script_output: string;
-    transaction_output: string;
-    target_deps: string;
-    target: string;
+    modules_output: string;
+    scripts_output: string;
+    transactions_output: string;
+    deps: string;
+    artifacts: string;
     index: string;
 }
 
@@ -24,7 +32,7 @@ interface PackageInfo {
     authors: string[];
     blockchain_api: string | null;
     local_dependencies: string[];
-    git_dependencies: string[];
+    git_dependencies: GitDependency[];
     dialect: MoveDialect;
 }
 
@@ -38,7 +46,10 @@ export function getServerInitOptsFromMetadata(metadata: Metadata): MoveLanguageS
     for (const local_dep of metadata.package.local_dependencies) {
         module_folders.push(local_dep);
     }
-    module_folders.push(metadata.layout.module_dir);
+    for (const git_dep of metadata.package.git_dependencies) {
+        module_folders.push(...git_dep.local_paths);
+    }
+    module_folders.push(metadata.layout.modules_dir);
 
     return {
         dialect: metadata.package.dialect,

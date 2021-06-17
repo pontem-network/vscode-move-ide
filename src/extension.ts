@@ -55,7 +55,7 @@ async function tryActivate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         commands.registerCommand('move.reload', () => {
             log.debug('"move.reload" called');
-            void vscode.window.showInformationMessage('Reloading Move IDE...');
+            void vscode.window.showInformationMessage('Move IDE has been reloaded');
 
             deactivate();
             while (context.subscriptions.length > 0) {
@@ -107,9 +107,10 @@ async function tryActivate(context: vscode.ExtensionContext) {
                 return;
             }
 
-            if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
-                commands.executeCommand('move.reload');
-            }
+            commands.executeCommand('move.reload');
+            // if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
+            //     commands.executeCommand('move.reload');
+            // }
         }
     };
     context.subscriptions.push(
