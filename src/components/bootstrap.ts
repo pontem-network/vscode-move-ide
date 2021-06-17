@@ -7,14 +7,15 @@ import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
 import { AssertionError } from 'assert';
 
-const DOVE_RELEASE_TAG = '1.2.2';
-const LANGUAGE_SERVER_RELEASE_TAG = '1.2.0';
+const RELEAGE_TAG = '1.2.2';
+// const DOVE_VERSION = '1.2.2';
+// const LANGUAGE_SERVER_VERSION = '1.2.0';
 
-function getReleaseTag(binaryName: string): string | undefined {
-    if (binaryName === 'dove') return DOVE_RELEASE_TAG;
-    if (binaryName === 'move-language-server') return LANGUAGE_SERVER_RELEASE_TAG;
-    return undefined;
-}
+// function getVersion(binaryName: string): string | undefined {
+//     if (binaryName === 'dove') return DOVE_VERSION;
+//     if (binaryName === 'move-language-server') return LANGUAGE_SERVER_VERSION;
+//     return undefined;
+// }
 
 function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     if (name === 'win32') return 'win';
@@ -115,10 +116,7 @@ async function getBinaryPathEnsureExists(
     }
 
     const release = await downloadWithRetryDialog(state, async () => {
-        let releaseTag = getReleaseTag(binaryName);
-        if (!releaseTag) return undefined;
-
-        return await fetchRelease(releaseTag, state.githubToken);
+        return await fetchRelease(RELEAGE_TAG, state.githubToken);
     });
     if (!release) throw new AssertionError({ message: `Invalid binaryName ${binaryName}` });
 
