@@ -15,7 +15,7 @@ Supports:
 Install extension from
 the [marketplace](https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language) to start.
 
-## Setupgit
+## Setup
 
 1. Download and install [Dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#installation) locally.
 2. Create [new project](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove).
