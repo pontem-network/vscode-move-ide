@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Uri, workspace } from 'vscode';
+import { TextDocument, Uri, workspace } from 'vscode';
 import { strict as nativeAssert } from 'assert';
 import { spawnSync } from 'child_process';
 import { inspect } from 'util';
@@ -64,11 +64,14 @@ export function isMoveDocument(document: vscode.TextDocument): document is MoveD
     // by allowing only `file` schemes
     // unfortunately extensions that use diff views not always set this
     // to something different than 'file' (see ongoing bug: #4608)
-    return document.languageId === 'move' && document.uri.scheme === 'file';
+    return (
+        document.uri.scheme === 'file' &&
+        (document.languageId === 'move' || document.uri.fsPath.endsWith('Dove.toml'))
+    );
 }
 
-export function isMoveEditor(editor: vscode.TextEditor): editor is MoveEditor {
-    return isMoveDocument(editor.document);
+export function isMoveEditor(text_document: TextDocument): text_document is MoveDocument {
+    return isMoveDocument(text_document);
 }
 
 export function isValidExecutable(path: string): boolean {

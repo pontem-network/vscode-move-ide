@@ -32,23 +32,26 @@ async function tryActivate(context: vscode.ExtensionContext) {
     context.subscriptions.push(clientWorkspaceFactory);
     context.subscriptions.push(
         window.onDidChangeActiveTextEditor(async (editor) => {
-            await clientWorkspaceFactory.initClientWorkspace(editor);
+            await clientWorkspaceFactory.initClientWorkspace(editor?.document);
+        })
+    );
+    context.subscriptions.push(
+        workspace.onDidSaveTextDocument(async (text_document) => {
+            if (text_document.uri.fsPath.endsWith('Dove.toml')) {
+                await clientWorkspaceFactory.initClientWorkspace(text_document);
+            }
         })
     );
     // Manually trigger the first event to start up server instance if necessary,
     // since VSCode doesn't do that on startup by itself.
-    await clientWorkspaceFactory.initClientWorkspace(window.activeTextEditor);
+    await clientWorkspaceFactory.initClientWorkspace(window.activeTextEditor?.document);
 
-    // const registerCommand = (command: string, callback: (...args: any[]) => any) => {
-    //     log.debug(`Re`)
-    //     commands.registerCommand(command, callback)
-    // }
     // Reloading is inspired by @DanTup maneuver: https://github.com/microsoft/vscode/issues/45774#issuecomment-373423895
     log.debug('Register command "move.reload"');
     context.subscriptions.push(
         commands.registerCommand('move.reload', () => {
             log.debug('"move.reload" called');
-            void vscode.window.showInformationMessage('Reloading Move IDE...');
+            void vscode.window.showInformationMessage('Move IDE has been reloaded');
 
             deactivate();
             while (context.subscriptions.length > 0) {
@@ -63,26 +66,6 @@ async function tryActivate(context: vscode.ExtensionContext) {
         })
     );
 
-    log.debug('Register command "move.doveInit"');
-    context.subscriptions.push(
-        commands.registerCommand('move.doveInit', async () => {
-            log.debug('"move.doveInit" called');
-            void vscode.window.showInformationMessage('Initializing current project...');
-
-            const editor = window.activeTextEditor;
-            if (!editor || !editor.document) return;
-            const folder = workspace.getWorkspaceFolder(editor.document.uri);
-            if (!folder) return;
-
-            const execs = await bootstrap(context, state);
-            const dove = new Dove(execs.doveExecutablePath);
-            await dove.init(folder);
-            commands.executeCommand('move.reload');
-
-            await clientWorkspaceFactory.initClientWorkspace(editor);
-        })
-    );
-
     const onDidDoveTomlChanged = async (documentUri: Uri) => {
         if (documentUri.fsPath.endsWith('Dove.toml')) {
             const folder = workspace.getWorkspaceFolder(documentUri);
@@ -92,16 +75,15 @@ async function tryActivate(context: vscode.ExtensionContext) {
             // validate Dove.toml, and show notification if invalid
             const doveExecutable = (await bootstrap(context, state)).doveExecutablePath;
             const dove = new Dove(doveExecutable);
-            const metadata = await dove.metadata(folder);
+
+            const [metadata, errors] = await dove.metadata(folder);
             if (!metadata) {
                 // invalid Dove.toml
-                vscode.window.showErrorMessage('Dove.toml is invalid');
+                vscode.window.showErrorMessage(`Dove.toml is invalid: ${errors}`);
                 return;
             }
 
-            if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
-                commands.executeCommand('move.reload');
-            }
+            commands.executeCommand('move.reload');
         }
     };
     context.subscriptions.push(

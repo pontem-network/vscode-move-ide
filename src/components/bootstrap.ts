@@ -5,8 +5,9 @@ import { assert, isValidExecutable, log, uriExists } from './util';
 import { ExtensionSettings } from './settings';
 import * as os from 'os';
 import { download, downloadWithRetryDialog, fetchRelease } from './net';
+import { AssertionError } from 'assert';
 
-const RELEASE_TAG = '1.2.0';
+const RELEAGE_TAG = '1.2.2';
 
 function getPlatformLabel(name: NodeJS.Platform): string | undefined {
     if (name === 'win32') return 'win';
@@ -107,8 +108,10 @@ async function getBinaryPathEnsureExists(
     }
 
     const release = await downloadWithRetryDialog(state, async () => {
-        return await fetchRelease(RELEASE_TAG, state.githubToken);
+        return await fetchRelease(RELEAGE_TAG, state.githubToken);
     });
+    if (!release) throw new AssertionError({ message: `Invalid binaryName ${binaryName}` });
+
     const asset = release.assets.find(
         ({ browser_download_url, name }) =>
             name.startsWith(binaryName) && name.includes(platformLabel)
