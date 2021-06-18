@@ -83,9 +83,7 @@ async function tryActivate(context: vscode.ExtensionContext) {
                 return;
             }
 
-            if (documentUri === Uri.joinPath(folder.uri, 'Dove.toml')) {
-                commands.executeCommand('move.reload');
-            }
+            commands.executeCommand('move.reload');
         }
     };
     context.subscriptions.push(
