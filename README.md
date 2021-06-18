@@ -9,20 +9,17 @@ experience with Move less painful.
 Supports:
 
 -   Syntax highlighting
--   On-the-fly compiler checks via [Move Language Server]()
--   Compile, run and test Move code via integration with [Dove]()
+-   On-the-fly compiler checks via [Move Language Server](https://github.com/pontem-network/move-tools)
+-   Compile, run and test Move code via integration with [Dove](https://github.com/pontem-network/move-tools)
 
 Install extension from
 the [marketplace](https://marketplace.visualstudio.com/items?itemName=PontemNetwork.move-language) to start.
 
-## Setup
+## Setupgit
 
-Out-of-box the extension only supports syntax highlighting.
-
-To get advanced features like checking code for compiler errors in the editor, you need to initialize your Dove project:
-
-1. Run `Initialize Dove project` command from Command Palette
-2. This will create following directory structure in the root of your project:
+1. Download and install [Dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#installation) locally.
+2. Create [new project](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove).
+3. Open project directory into VSCode and see following structure in the root of your project:
 
 ```
     /scripts
@@ -30,9 +27,6 @@ To get advanced features like checking code for compiler errors in the editor, y
     /tests
     Dove.toml
 ```
-
-For more information of Dove and Dove.toml file
-see [https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove)
 
 **Additional configuration options:**
 
