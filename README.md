@@ -19,7 +19,7 @@ the [marketplace](https://marketplace.visualstudio.com/items?itemName=PontemNetw
 
 Out-of-box the extension only supports syntax highlighting.
 
-To get advanced features like checking code for compiler errors in the editor, you need to initialize your Dove project], [see docs](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove).
+To get advanced features like checking code for compiler errors in the editor, you need to initialize your Dove project, [see docs](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove).
 
 This will create following directory structure in the root of your project:
 
