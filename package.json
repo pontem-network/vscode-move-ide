@@ -18,7 +18,7 @@
         "prettier": "prettier --write src/ package.json"
     },
     "dependencies": {
-        "node-fetch": "^2.6.1",
+        "node-fetch": "^2.6.7",
         "npm": "^7.8.0",
         "vscode-languageclient": "^7.0.0",
         "vscode-languageserver": "^7.0.0",
