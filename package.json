@@ -19,7 +19,7 @@
     },
     "dependencies": {
         "node-fetch": "^2.6.1",
-        "npm": "^7.8.0",
+        "npm": "^9.8.0",
         "vscode-languageclient": "^7.0.0",
         "vscode-languageserver": "^7.0.0",
         "vscode-languageserver-protocol": "^3.16.0",
